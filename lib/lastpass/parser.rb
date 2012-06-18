@@ -18,10 +18,12 @@ module LastPass
             @blob = blob
         end
 
+        # Does all the parsing
         def parse
             decode_blob @blob
         end
 
+        # Decodes the blob form base64 to raw
         def decode_blob blob
             if not String === blob
                 raise ArgumentError, 'Blob should be a string'
@@ -32,6 +34,13 @@ module LastPass
             end
 
             decode_base64 blob
+        end
+
+        # Iterates over the chunks in the stream
+        def each_chunk stream
+            while !stream.eof?
+                yield read_chunk stream
+            end
         end
 
         #

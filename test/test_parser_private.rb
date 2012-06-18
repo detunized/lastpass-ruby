@@ -29,6 +29,26 @@ class ParserPrivateTest < Test::Unit::TestCase
         assert_equal @decoded_blob, @parser.decode_blob(@blob)
     end
 
+    def test_each_chunk
+        # Extract chunks manually
+        chunks = []
+        StringIO.open @decoded_blob do |stream|
+            while !stream.eof?
+                chunks << @parser.read_chunk(stream)
+            end
+        end
+
+        # Extract chunks using 'each_chunk'
+        chunks_from_each = []
+        StringIO.open @decoded_blob do |stream|
+            @parser.each_chunk stream do |chunk|
+                chunks_from_each << chunk
+            end
+        end
+
+        assert_equal chunks, chunks_from_each
+    end
+
     #
     # IO tests
     #
