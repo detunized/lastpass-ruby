@@ -29,6 +29,22 @@ class ParserPrivateTest < Test::Unit::TestCase
         assert_equal @decoded_blob, @parser.decode_blob(@blob)
     end
 
+    def test_extract_chunks
+        chunks = @parser.extract_chunks @decoded_blob
+
+        assert_kind_of Hash, chunks
+        chunks.each do |id, chunks_of_on_kind|
+            assert_kind_of String, id
+            assert_equal 4, id.length
+            assert_match /[A-Z]{4}/, id
+
+            assert_kind_of Array, chunks_of_on_kind
+            chunks_of_on_kind.each do |chunk|
+                assert_kind_of String, chunk
+            end
+        end
+    end
+
     def test_each_chunk
         # Extract chunks manually
         chunks = []

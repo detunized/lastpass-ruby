@@ -36,6 +36,20 @@ module LastPass
             decode_base64 blob
         end
 
+        # Splits the blob into the chunks grouped by id
+        def extract_chunks blob
+            chunks = Hash.new { |hash, key| hash[key] = [] }
+
+            StringIO.open blob do |stream|
+                while !stream.eof?
+                    chunk = read_chunk stream
+                    chunks[chunk[:id]] << chunk[:payload]
+                end
+            end
+
+            chunks
+        end
+
         # Iterates over the chunks in the stream
         def each_chunk stream
             while !stream.eof?
