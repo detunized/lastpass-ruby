@@ -38,6 +38,20 @@ module LastPass
         # IO
         #
 
+        def read_chunk stream
+            # LastPass blob chunk is made up of 4-byte ID, 4-byte size and payload of that size
+            # Example:
+            #   0000: 'IDID'
+            #   0004: 4
+            #   0008: 0xDE 0xAD 0xBE 0xEF
+            #   000C: --- Next chunk ---
+            id = stream.read 4
+            size = read_uint32 stream
+            payload = stream.read size
+
+            {:id => id, :size => size, :payload => payload}
+        end
+
         def read_uint32 stream
             stream.read(4).unpack('N').first
         end
