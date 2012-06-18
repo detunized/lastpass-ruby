@@ -1,4 +1,5 @@
 require "base64"
+require "stringio"
 
 module LastPass
     class Parser
@@ -32,6 +33,18 @@ module LastPass
 
             decode_base64 blob
         end
+
+        #
+        # IO
+        #
+
+        def read_uint32 stream
+            stream.read(4).unpack('N').first
+        end
+
+        #
+        # Decoders
+        #
 
         def decode_base64 data
             Base64.decode64 data
