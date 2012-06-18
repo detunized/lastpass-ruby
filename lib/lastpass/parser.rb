@@ -1,3 +1,5 @@
+require "base64"
+
 module LastPass
     class Parser
         class << self
@@ -28,7 +30,11 @@ module LastPass
                 raise ArgumentError, 'Blob doesn\'t seem to be base64 encoded'
             end
 
-            blob
+            decode_base64 blob
+        end
+
+        def decode_base64 data
+            Base64.decode64 data
         end
     end
 end
