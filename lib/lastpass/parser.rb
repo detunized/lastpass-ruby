@@ -20,7 +20,7 @@ module LastPass
 
         # Does all the parsing
         def parse
-            decode_blob @blob
+            parse_chunks extract_chunks decode_blob @blob
         end
 
         # Decodes the blob form base64 to raw
@@ -55,6 +55,23 @@ module LastPass
             while !stream.eof?
                 yield read_chunk stream
             end
+        end
+
+        def parse_chunks raw_chunks
+            parsed_chunks = {}
+
+            raw_chunks.each do |id, chunks|
+                parse_method = "parse_chunk_#{id}"
+                if respond_to? parse_method, true
+                    parsed_chunks[id] = chunks.map do |chunk|
+                        StringIO.open chunk do |stream|
+                            send parse_method, stream
+                        end
+                    end
+                end
+            end
+
+            parsed_chunks
         end
 
         #

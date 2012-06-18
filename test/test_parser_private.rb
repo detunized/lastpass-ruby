@@ -33,13 +33,17 @@ class ParserPrivateTest < Test::Unit::TestCase
         chunks = @parser.extract_chunks @decoded_blob
 
         assert_kind_of Hash, chunks
-        chunks.each do |id, chunks_of_on_kind|
+        chunks.each do |id, chunks_of_one_kind|
             assert_kind_of String, id
             assert_equal 4, id.length
             assert_match /[A-Z]{4}/, id
 
-            assert_kind_of Array, chunks_of_on_kind
-            chunks_of_on_kind.each do |chunk|
+            assert_kind_of Array, chunks_of_one_kind
+
+            # If an id is present, then there should be at least one chunk of that kind
+            assert_operator chunks_of_one_kind.length, :>, 0
+
+            chunks_of_one_kind.each do |chunk|
                 assert_kind_of String, chunk
             end
         end
@@ -63,6 +67,22 @@ class ParserPrivateTest < Test::Unit::TestCase
         end
 
         assert_equal chunks, chunks_from_each
+    end
+
+    def test_parse_chunks
+        raw_chunks = @parser.extract_chunks @decoded_blob
+        parsed_chunks = @parser.parse_chunks raw_chunks
+
+        assert_kind_of Hash, parsed_chunks
+        parsed_chunks.each do |id, chunks|
+            # Parsed chunk id should be one of the original ids
+            assert raw_chunks.keys.include id
+
+            assert_kind_of Array, chunks
+
+            # If chunk type is supported then all of them should be parsed
+            assert_equal raw_chunks[id].length, chunks.length
+        end
     end
 
     #
