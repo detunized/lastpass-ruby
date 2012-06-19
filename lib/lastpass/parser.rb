@@ -12,6 +12,8 @@ module LastPass
             end
         end
 
+        attr_reader :chunks
+
         private
 
         def initialize blob
@@ -20,7 +22,7 @@ module LastPass
 
         # Does all the parsing
         def parse
-            parse_chunks extract_chunks decode_blob @blob
+            @chunks = parse_chunks extract_chunks decode_blob @blob
         end
 
         # Decodes the blob form base64 to raw

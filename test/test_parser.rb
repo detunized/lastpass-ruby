@@ -28,4 +28,16 @@ class ParserTest < Test::Unit::TestCase
             LastPass::Parser.parse 'ABCD'
         end
     end
+
+    def test_chunks
+        assert_kind_of Hash, @parser.chunks
+        @parser.chunks.each do |id, chunks|
+            assert_kind_of String, id
+            assert_equal 4, id.length
+            assert_match /[A-Z]{4}/, id
+
+            assert_kind_of Array, chunks
+            assert_operator chunks.length, :>, 0
+        end
+    end
 end
