@@ -40,4 +40,10 @@ class ParserTest < Test::Unit::TestCase
             assert_operator chunks.length, :>, 0
         end
     end
+
+    def test_chunk_LPAV
+        assert @parser.chunks.keys.include? 'LPAV'
+        assert_equal 1, @parser.chunks['LPAV'].length
+        assert_equal '471', @parser.chunks['LPAV'][0]
+    end
 end

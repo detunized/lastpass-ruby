@@ -105,5 +105,14 @@ module LastPass
         def decode_base64 data
             Base64.decode64 data
         end
+
+        #
+        # Chunk parsers
+        #
+
+        # 'LPAV' chunk seems to be storing some kind of version information
+        def parse_chunk_LPAV stream
+            stream.read
+        end
     end
 end
