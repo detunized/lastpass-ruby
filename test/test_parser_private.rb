@@ -90,7 +90,7 @@ class ParserPrivateTest < Test::Unit::TestCase
     #
 
     def test_read_chunk
-        chunk = {:id => 'TEST', :size => 10, :payload => '1234567890'}
+        chunk = {:id => 'TEST', :size => 10, :payload => '0123456789'}
 
         StringIO.open [chunk[:id], chunk[:size], chunk[:payload]].pack('a*Na*') do |stream|
             assert_equal chunk, @parser.read_chunk(stream)
