@@ -114,6 +114,43 @@ class ParserPrivateTest < Test::Unit::TestCase
         end
     end
 
+    def test_read_item
+        def pack_item item
+            [item[:size], item[:payload]].pack('Na*')
+        end
+
+        items = [
+            {:size => 1, :payload => '0' },
+            {:size => 2, :payload => '01' },
+            {:size => 10, :payload => '0123456789'},
+            {:size => 16, :payload => '0123456789ABCDEF'}
+        ]
+
+        # One item in a stream
+        items.each do |item|
+            StringIO.open pack_item(item) do |stream|
+                assert_equal item, @parser.read_item(stream)
+                assert stream.eof?
+            end
+        end
+
+        # All items in one stream
+        StringIO.open(items.map { |item| pack_item item }.join) do |stream|
+            items.each do |item|
+                assert_equal item, @parser.read_item(stream)
+            end
+            assert stream.eof?
+        end
+
+        # All items in one stream + padding (make sure padding is not touched)
+        StringIO.open(items.map { |item| pack_item item }.join + STREAM_PADDING) do |stream|
+            items.each do |item|
+                assert_equal item, @parser.read_item(stream)
+            end
+            assert_equal STREAM_PADDING, stream.read
+        end
+    end
+
     def test_read_uint32
         numbers = [0, 1, 10, 1000, 10000, 100000, 1000000, 10000000, 100000000, 0x7fffffff, 0xffffffff]
 

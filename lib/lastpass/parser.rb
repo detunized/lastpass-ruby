@@ -94,6 +94,18 @@ module LastPass
             {:id => id, :size => size, :payload => payload}
         end
 
+        def read_item stream
+            # An item in an itemized chunk is made up of a size and the payload
+            # Example:
+            #   0000: 4
+            #   0004: 0xDE 0xAD 0xBE 0xEF
+            #   0008: --- Next item ---
+            size = read_uint32 stream
+            payload = stream.read size
+
+            {:size => size, :payload => payload}
+        end
+
         def read_uint32 stream
             stream.read(4).unpack('N').first
         end
