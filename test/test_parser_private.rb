@@ -187,6 +187,25 @@ class ParserPrivateTest < Test::Unit::TestCase
     # decode_* tests
     #
 
+    def test_decode
+        test_data = {
+            nil => {'All your base are belong to us' => 'All your base are belong to us'},
+            :plain => {'All your base are belong to us' => 'All your base are belong to us'},
+            :base64 => {'All your base are belong to us' => 'QWxsIHlvdXIgYmFzZSBhcmUgYmVsb25nIHRvIHVz'}
+        }
+
+        test_data.each do |encoding, data|
+            data.each do |decoded, encoded|
+                assert_equal decoded, @parser.decode(encoded, encoding)
+            end
+        end
+
+        # Unknown encoding
+        assert_raise NoMethodError do
+            @parser.decode '', :unknown_encoding
+        end
+    end
+
     def test_decode_base64
         test_data = {
             'All your base are belong to us' => 'QWxsIHlvdXIgYmFzZSBhcmUgYmVsb25nIHRvIHVz',

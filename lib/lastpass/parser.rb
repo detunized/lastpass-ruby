@@ -114,6 +114,13 @@ module LastPass
         # Decoders
         #
 
+        # Allowed encodings:
+        #  - nil or :plain
+        #  - :base64
+        def decode data, encoding = nil
+            encoding.nil? || encoding == :plain ? data : send("decode_#{encoding}", data)
+        end
+
         def decode_base64 data
             Base64.decode64 data
         end
