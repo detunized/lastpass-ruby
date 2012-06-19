@@ -90,15 +90,19 @@ class ParserPrivateTest < Test::Unit::TestCase
     #
 
     def test_read_chunk
+        def pack_chunk chunk
+            [chunk[:id], chunk[:size], chunk[:payload]].pack('a*Na*')
+        end
+
         chunk = {:id => 'TEST', :size => 10, :payload => '0123456789'}
 
-        StringIO.open [chunk[:id], chunk[:size], chunk[:payload]].pack('a*Na*') do |stream|
+        StringIO.open pack_chunk(chunk) do |stream|
             assert_equal chunk, @parser.read_chunk(stream)
             assert stream.eof?
         end
 
         # Only bytes that make up a chunk should be extracted from the stream
-        StringIO.open [chunk[:id], chunk[:size], chunk[:payload], STREAM_PADDING].pack('a*Na*a*') do |stream|
+        StringIO.open pack_chunk(chunk) + STREAM_PADDING do |stream|
             assert_equal chunk, @parser.read_chunk(stream)
             assert_equal STREAM_PADDING, stream.read
         end
