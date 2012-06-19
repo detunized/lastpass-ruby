@@ -76,7 +76,7 @@ class ParserPrivateTest < Test::Unit::TestCase
         assert_kind_of Hash, parsed_chunks
         parsed_chunks.each do |id, chunks|
             # Parsed chunk id should be one of the original ids
-            assert raw_chunks.keys.include id
+            assert raw_chunks.keys.include? id
 
             assert_kind_of Array, chunks
 
