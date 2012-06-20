@@ -118,10 +118,15 @@ module LastPass
         #  - nil or :plain
         #  - :base64
         def decode data, encoding = nil
-            encoding.nil? || encoding == :plain ? data : send("decode_#{encoding}", data)
+            if encoding.nil? || encoding == :plain
+                data
+            else
+                send "decode_#{encoding}", data
+            end
         end
 
         def decode_base64 data
+            # TODO: Check for input validity
             Base64.decode64 data
         end
 
