@@ -126,6 +126,16 @@ module LastPass
         end
 
         #
+        # Parsing
+        #
+
+        # Itemized chunk item parser. For the list of allowed encodings see 'decode'.
+        # Returns decoded payload.
+        def parse_item stream, encoding = nil
+            decode read_item(stream)[:payload], encoding
+        end
+
+        #
         # Chunk parsers
         #
 

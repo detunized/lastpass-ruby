@@ -212,6 +212,25 @@ class ParserPrivateTest < Test::Unit::TestCase
     end
 
     #
+    # Parsing
+    #
+
+    def test_parse_item
+        decoded_payload = '0123456789'
+        encoded_items = {
+            nil => {:size => 10, :payload => '0123456789'},
+            :plain => {:size => 10, :payload => '0123456789'},
+            :base64 => {:size => 16, :payload => 'MDEyMzQ1Njc4OQ=='}
+        }
+
+        encoded_items.each do |encoding, item|
+            StringIO.open pack_item(item) do |stream|
+                assert_equal decoded_payload, @parser.parse_item(stream, encoding)
+            end
+        end
+    end
+
+    #
     # Helpers
     #
 
