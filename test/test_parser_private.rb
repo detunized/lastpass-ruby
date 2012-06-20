@@ -212,6 +212,17 @@ class ParserPrivateTest < Test::Unit::TestCase
         end
     end
 
+    def test_decode_hex
+        test_data = {
+            '' => '',
+            'All your base are belong to us' => '416c6c20796f75722062617365206172652062656c6f6e6720746f207573'
+        }
+
+        test_data.each do |decoded, encoded|
+            assert_equal decoded, @parser.decode_hex(encoded)
+        end
+    end
+
     #
     # Parsing
     #

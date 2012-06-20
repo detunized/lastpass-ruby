@@ -130,6 +130,11 @@ module LastPass
             Base64.decode64 data
         end
 
+        def decode_hex data
+            # TODO: Check for input validity
+            data.scan(/../).map { |i| i.to_i 16 }.pack "c*"
+        end
+
         #
         # Parsing
         #
