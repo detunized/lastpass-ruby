@@ -90,10 +90,6 @@ class ParserPrivateTest < Test::Unit::TestCase
     #
 
     def test_read_chunk
-        def pack_chunk chunk
-            [chunk[:id], chunk[:size], chunk[:payload]].pack('a*Na*')
-        end
-
         chunk = {:id => 'TEST', :size => 10, :payload => '0123456789'}
 
         StringIO.open pack_chunk(chunk) do |stream|
@@ -119,10 +115,6 @@ class ParserPrivateTest < Test::Unit::TestCase
     end
 
     def test_read_item
-        def pack_item item
-            [item[:size], item[:payload]].pack('Na*')
-        end
-
         items = [
             {:size => 1, :payload => '0' },
             {:size => 2, :payload => '01' },
@@ -217,5 +209,19 @@ class ParserPrivateTest < Test::Unit::TestCase
         test_data.each do |decoded, encoded|
             assert_equal decoded, @parser.decode_base64(encoded)
         end
+    end
+
+    #
+    # Helpers
+    #
+
+    # Example: chunk = {:id => 'TEST', :size => 10, :payload => '0123456789'}
+    def pack_chunk chunk
+        [chunk[:id], chunk[:size], chunk[:payload]].pack('a*Na*')
+    end
+
+    # Example: item = {:size => 10, :payload => '0123456789'}
+    def pack_item item
+        [item[:size], item[:payload]].pack('Na*')
     end
 end
