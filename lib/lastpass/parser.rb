@@ -129,6 +129,22 @@ module LastPass
         # Parsing
         #
 
+        # Generic itemized chunk parser.  Info parameter should look like this:
+        # [
+        #   {:name => 'item_name1'},
+        #   {:name => 'item_name2', :encoding => :hex},
+        #   {:name => 'item_name3', :encoding => :aes256}
+        # ]
+        def parse_itemized_chunk stream, info
+            chunk = {}
+
+            info.each do |item_info|
+                chunk[item_info[:name]] = parse_item stream, item_info[:encoding]
+            end
+
+            chunk
+        end
+
         # Itemized chunk item parser. For the list of allowed encodings see 'decode'.
         # Returns decoded payload.
         def parse_item stream, encoding = nil

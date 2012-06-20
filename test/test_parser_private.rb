@@ -215,6 +215,33 @@ class ParserPrivateTest < Test::Unit::TestCase
     # Parsing
     #
 
+    def test_parse_itemized_chunk
+        decoded_payload = '0123456789'
+
+        info = [
+            {:name => :text_plain},
+            {:name => :text_base64, :encoding => :base64}
+        ]
+
+        items = [
+            {:size => 10, :payload => '0123456789'},
+            {:size => 16, :payload => 'MDEyMzQ1Njc4OQ=='}
+        ]
+
+        StringIO.open(items.map { |item| pack_item item }.join + STREAM_PADDING) do |stream|
+            decoded_items = @parser.parse_itemized_chunk stream, info
+
+            assert_kind_of Hash, decoded_items
+            assert_equal info.map { |i| i[:name] }.sort, decoded_items.keys.sort
+
+            decoded_items.each do |name, payload|
+                assert_equal decoded_payload, payload
+            end
+
+            assert_equal STREAM_PADDING, stream.read
+        end
+    end
+
     def test_parse_item
         decoded_payload = '0123456789'
         encoded_items = {
