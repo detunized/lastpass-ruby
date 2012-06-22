@@ -4,8 +4,8 @@ require "stringio"
 module LastPass
     class Parser
         class << self
-            def parse blob
-                parser = Parser.new blob
+            def parse blob, encryption_key
+                parser = Parser.new blob, encryption_key
                 parser.send :parse # to avoid exposing the private 'parse' method
 
                 parser
@@ -16,8 +16,9 @@ module LastPass
 
         private
 
-        def initialize blob
+        def initialize blob, encryption_key
             @blob = blob
+            @encryption_key = encryption_key
         end
 
         # Does all the parsing

@@ -3,10 +3,12 @@ require 'lastpass'
 
 class ParserTest < Test::Unit::TestCase
     @@blob = File.read 'lastpass-blob'
+    @@key = "\x0Er\xAB\x82\xD5@K\xDB\xD3\xA8\xB9\x9E\xCD\xA5\xBC\x05\xBB^@\xFA\x18a\xCDm\xB3X\xE8\x8E\xA1\xF7}\xEB"
 
     def setup
         @blob = @@blob
-        @parser = LastPass::Parser.parse @blob
+        @key = @@key
+        @parser = LastPass::Parser.parse @blob, @key
     end
 
     def test_type_is_correct
@@ -15,17 +17,17 @@ class ParserTest < Test::Unit::TestCase
 
     def test_parse_fails_with_nil_blob
         assert_raise ArgumentError do
-            LastPass::Parser.parse nil
+            LastPass::Parser.parse nil, @key
         end
     end
 
     def test_parse_fails_with_invalid_blob
         assert_raise ArgumentError do
-            LastPass::Parser.parse ''
+            LastPass::Parser.parse '', @key
         end
 
         assert_raise ArgumentError do
-            LastPass::Parser.parse 'ABCD'
+            LastPass::Parser.parse 'ABCD', @key
         end
     end
 

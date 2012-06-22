@@ -5,24 +5,35 @@ class ParserPrivateTest < Test::Unit::TestCase
     STREAM_PADDING = 'This should be left in the stream!'
 
     @@blob = File.read 'lastpass-blob'
+    @@key = "\x0Er\xAB\x82\xD5@K\xDB\xD3\xA8\xB9\x9E\xCD\xA5\xBC\x05\xBB^@\xFA\x18a\xCDm\xB3X\xE8\x8E\xA1\xF7}\xEB"
 
     # The blob is base64 encoded
     @@decoded_blob = Base64.decode64 @@blob
 
     def setup
         @blob = @@blob
+        @key = @@key
+
         @decoded_blob = @@decoded_blob
 
         @parser_private_methods = LastPass::Parser.private_instance_methods
         methods = @parser_private_methods
         LastPass::Parser.class_eval { public *methods }
 
-        @parser = LastPass::Parser.new @blob
+        @parser = LastPass::Parser.new @blob, @key
     end
 
     def teardown
         methods = @parser_private_methods
         LastPass::Parser.class_eval { private *methods }
+    end
+
+    def test_blob
+        assert_equal @blob, @parser.instance_variable_get(:@blob)
+    end
+
+    def test_encryption_key
+        assert_equal @key, @parser.instance_variable_get(:@encryption_key)
     end
 
     def test_decode_blob
