@@ -240,5 +240,10 @@ module LastPass
         def parse_chunk_LPAV stream
             stream.read
         end
+
+        # 'ENCU' chunk contains encrypted user name
+        def parse_chunk_ENCU stream
+            decode_aes256 stream.read
+        end
     end
 end

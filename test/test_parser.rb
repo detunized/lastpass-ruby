@@ -49,4 +49,10 @@ class ParserTest < Test::Unit::TestCase
         assert_equal 1, @parser.chunks['LPAV'].length
         assert_equal '9', @parser.chunks['LPAV'][0]
     end
+
+    def test_chunk_ENCU
+        assert @parser.chunks.keys.include? 'ENCU'
+        assert_equal 1, @parser.chunks['ENCU'].length
+        assert_equal 'postlass@gmail.com', @parser.chunks['ENCU'][0]
+    end
 end
