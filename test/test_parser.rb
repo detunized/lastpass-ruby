@@ -56,6 +56,60 @@ class ParserTest < Test::Unit::TestCase
         check_only_one_chunk 'NMAC', '8'
     end
 
+    def test_chunk_ACCT
+        assert @parser.chunks.keys.include? 'ACCT'
+
+        accounts = @parser.chunks['ACCT']
+        assert_equal 8, accounts.length
+
+        test_account = {
+            :id => '753975336',
+            :name => 'twitter.com',
+            :group => '',
+            :url => 'http://',
+            :extra => '',
+            :favorite => '0',
+            :shared_from_id => '',
+            :username => 'lostpass',
+            :password => '1234567890',
+            :password_protected => '0',
+            :generated_password => '0',
+            :sn => '0',
+            :last_touched => '1339761545',
+            :auto_login => '0',
+            :never_autofill => '0',
+            :realm_data => '',
+            :fiid => '753975336',
+            :custom_js => '',
+            :submit_id => '',
+            :captcha_id => '',
+            :urid => '0',
+            :basic_authorization => '0',
+            :method => '',
+            :action => '',
+            :group_id => '',
+            :deleted => '0',
+            :attach_key => '',
+            :attach_present => '',
+            :individual_share => '0',
+            :unknown1 => ''
+        }
+
+        accounts.each do |account|
+            assert_kind_of Hash, account
+            assert_equal account.keys.sort, test_account.keys.sort
+
+            test_account.each do |id, item|
+                assert_kind_of String, item
+            end
+        end
+
+        # Check one by one so it's easier spot the problems
+        test_account.each do |id, item|
+            assert_equal item, accounts[0][id]
+        end
+    end
+
     #
     # Helpers
     #

@@ -250,5 +250,41 @@ module LastPass
         def parse_chunk_NMAC stream
             stream.read
         end
+
+        # 'ACCT' chunk contains account information
+        def parse_chunk_ACCT stream
+            parse_itemized_chunk stream, [
+                {:name => :id},
+                {:name => :name, :encoding => :aes256},
+                {:name => :group, :encoding => :aes256},
+                {:name => :url, :encoding => :hex},
+                {:name => :extra},
+                {:name => :favorite},
+                {:name => :shared_from_id},
+                {:name => :username, :encoding => :aes256},
+                {:name => :password, :encoding => :aes256},
+                {:name => :password_protected},
+                {:name => :generated_password},
+                {:name => :sn}, # ?
+                {:name => :last_touched},
+                {:name => :auto_login},
+                {:name => :never_autofill},
+                {:name => :realm_data},
+                {:name => :fiid}, # ?
+                {:name => :custom_js},
+                {:name => :submit_id},
+                {:name => :captcha_id},
+                {:name => :urid}, # ?
+                {:name => :basic_authorization},
+                {:name => :method},
+                {:name => :action, :encoding => :hex},
+                {:name => :group_id},
+                {:name => :deleted},
+                {:name => :attach_key},
+                {:name => :attach_present},
+                {:name => :individual_share},
+                {:name => :unknown1}
+            ]
+        end
     end
 end
