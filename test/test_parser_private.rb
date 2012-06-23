@@ -195,7 +195,9 @@ class ParserPrivateTest < Test::Unit::TestCase
         test_data = {
             nil => {'All your base are belong to us' => 'All your base are belong to us'},
             :plain => {'All your base are belong to us' => 'All your base are belong to us'},
-            :base64 => {'All your base are belong to us' => 'QWxsIHlvdXIgYmFzZSBhcmUgYmVsb25nIHRvIHVz'}
+            :hex => {'All your base are belong to us' => '416c6c20796f75722062617365206172652062656c6f6e6720746f207573'},
+            :base64 => {'All your base are belong to us' => 'QWxsIHlvdXIgYmFzZSBhcmUgYmVsb25nIHRvIHVz'},
+            :aes256 => {'All your base are belong to us' => '!YFuiAVZgOD2K+s6y8yaMOw==|TZ1+if9ofqRKTatyUaOnfudletslMJ/RZyUwJuR/+aI='}
         }
 
         test_data.each do |encoding, data|
