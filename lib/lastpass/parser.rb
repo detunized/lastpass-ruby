@@ -1,4 +1,5 @@
 require "base64"
+require 'openssl'
 require "stringio"
 
 module LastPass
@@ -134,6 +135,17 @@ module LastPass
         def decode_hex data
             # TODO: Check for input validity
             data.scan(/../).map { |i| i.to_i 16 }.pack "c*"
+        end
+
+        def decode_aes256_ecb_plain data
+            if data.empty?
+                ''
+            else
+                aes = OpenSSL::Cipher::Cipher.new 'aes-256-ecb'
+                aes.decrypt
+                aes.key = @encryption_key
+                aes.update(data) + aes.final
+            end
         end
 
         #
