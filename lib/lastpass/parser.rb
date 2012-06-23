@@ -141,10 +141,7 @@ module LastPass
             if data.empty?
                 ''
             else
-                aes = OpenSSL::Cipher::Cipher.new 'aes-256-ecb'
-                aes.decrypt
-                aes.key = @encryption_key
-                aes.update(data) + aes.final
+                _decode_aes256 :ecb, '', data
             end
         end
 
@@ -160,12 +157,32 @@ module LastPass
                 ''
             else
                 # TODO: Check for input validity!
-                aes = OpenSSL::Cipher::Cipher.new 'aes-256-cbc'
-                aes.decrypt
-                aes.key = @encryption_key
-                aes.iv = data[1, 16]
-                aes.update(data[17..-1]) + aes.final
+                _decode_aes256 :cbc, data[1, 16], data[17..-1]
             end
+        end
+
+        # LastPass AES-256/CBC/base64 encryted string starts with '!'.
+        # Next 24 bytes are the base64 encoded IV for the cipher.
+        # Then comes the '|'.
+        # And the rest is the base64 encoded encrypted payload.
+        def decode_aes256_cbc_base64 data
+            if data.empty?
+                ''
+            else
+                # TODO: Check for input validity!
+                _decode_aes256 :cbc, decode_base64(data[1, 24]), decode_base64(data[26..-1])
+            end
+        end
+
+        # Hidden, so it's not discoverable as 'decode_*'.
+        # Allowed ciphers are :ecb and :cbc.
+        # If for :ecb iv is not used and should be set to ''.
+        def _decode_aes256 cipher, iv, data
+            aes = OpenSSL::Cipher::Cipher.new "aes-256-#{cipher}"
+            aes.decrypt
+            aes.key = @encryption_key
+            aes.iv = iv
+            aes.update(data) + aes.final
         end
 
         #
