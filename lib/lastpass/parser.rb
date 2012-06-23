@@ -286,5 +286,13 @@ module LastPass
                 {:name => :unknown1}
             ]
         end
+
+        # 'EQDN' chunk contains information about equivalent domains
+        def parse_chunk_EQDN stream
+            parse_itemized_chunk stream, [
+                {:name => :id},
+                {:name => :domain, :encoding => :hex}
+            ]
+        end
     end
 end

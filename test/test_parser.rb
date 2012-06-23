@@ -99,7 +99,7 @@ class ParserTest < Test::Unit::TestCase
             assert_kind_of Hash, account
             assert_equal account.keys.sort, test_account.keys.sort
 
-            test_account.each do |id, item|
+            test_account.values.each do |item|
                 assert_kind_of String, item
             end
         end
@@ -107,6 +107,29 @@ class ParserTest < Test::Unit::TestCase
         # Check one by one so it's easier spot the problems
         test_account.each do |id, item|
             assert_equal item, accounts[0][id]
+        end
+    end
+
+    def test_chunk_EQDN
+        assert @parser.chunks.keys.include? 'EQDN'
+
+        domains = @parser.chunks['EQDN']
+        assert_equal 46, domains.length
+
+        test_domain = {:id => '1', :domain => 'ameritrade.com'}
+
+        domains.each do |domain|
+            assert_kind_of Hash, domain
+            assert_equal test_domain.keys.sort, domain.keys.sort
+
+            domain.values.each do |item|
+                assert_kind_of String, item
+            end
+        end
+
+        # Check one by one so it's easier spot the problems
+        test_domain.each do |id, item|
+            assert_equal item, domains[0][id]
         end
     end
 
