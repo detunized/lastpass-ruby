@@ -137,6 +137,27 @@ module LastPass
             data.scan(/../).map { |i| i.to_i 16 }.pack "c*"
         end
 
+        # Guesses AES encoding/cipher from the length of the data.
+        def decode_aes256 data
+            length = data.length
+            length16 = length % 16
+            length64 = length % 64
+
+            if length == 0
+                ''
+            elsif length16 == 0
+                decode_aes256_ecb_plain data
+            elsif length64 == 0 || length64 == 24 || length64 == 44
+                decode_aes256_ecb_base64 data
+            elsif length16 == 1
+                decode_aes256_cbc_plain data
+            elsif length64 == 6 || length64 == 26 || length64 == 50
+                decode_aes256_cbc_base64 data
+            else
+                raise RuntimeError, "'#{data.inspect}' doesn't seem to be AES-256 encrypted"
+            end
+        end
+
         def decode_aes256_ecb_plain data
             if data.empty?
                 ''

@@ -235,6 +235,34 @@ class ParserPrivateTest < Test::Unit::TestCase
         end
     end
 
+    def test_decode_aes256
+        test_data = [
+            {'' => ''},
+
+            # ECB/plain
+            {'0123456789' => '8mHxIA8rul6eq72a/Gq2iw=='.decode64},
+            {'All your base are belong to us' => 'BNhd3Q3ZVODxk9c0C788NUPTIfYnZuxXfkghtMJ8jVM='.decode64},
+
+            # ECB/base64
+            {'0123456789' => '8mHxIA8rul6eq72a/Gq2iw=='},
+            {'All your base are belong to us' => 'BNhd3Q3ZVODxk9c0C788NUPTIfYnZuxXfkghtMJ8jVM='},
+
+            # CBC/plain
+            {'0123456789' => 'IQ+hiIy0vGG4srsHmXChe3ehWc/rYPnfiyqOG8h78DdX'.decode64},
+            {'All your base are belong to us' => 'IcokDWmjOkKtLpZehWKL6666Uj6fNXPpX6lLWlou+1Lrwb+D3ymP6BAwd6C0TB3hSA=='.decode64},
+
+            # CBC/base64
+            {'0123456789' => '!6TZb9bbrqpocMaNgFjrhjw==|f7RcJ7UowesqGk+um+P5ug=='},
+            {'All your base are belong to us' => '!YFuiAVZgOD2K+s6y8yaMOw==|TZ1+if9ofqRKTatyUaOnfudletslMJ/RZyUwJuR/+aI='}
+        ]
+
+        test_data.each do |set|
+            set.each do |decoded, encoded|
+                assert_equal decoded, @parser.decode_aes256(encoded)
+            end
+        end
+    end
+
     def test_decode_aes256_ecb_plain
         test_data = {
             '' => '',
