@@ -1,9 +1,10 @@
 require 'test/unit'
 require 'lastpass'
+require_relative 'helper'
 
 class ParserTest < Test::Unit::TestCase
     @@blob = File.read 'lastpass-blob'
-    @@key = "\x0Er\xAB\x82\xD5@K\xDB\xD3\xA8\xB9\x9E\xCD\xA5\xBC\x05\xBB^@\xFA\x18a\xCDm\xB3X\xE8\x8E\xA1\xF7}\xEB"
+    @@key = "OfOUvVnQzB4v49sNh4+PdwIFb9Fr5+jVfWRTf+E2Ghg=".decode64
 
     def setup
         @blob = @@blob
