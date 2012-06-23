@@ -245,5 +245,10 @@ module LastPass
         def parse_chunk_ENCU stream
             decode_aes256 stream.read
         end
+
+        # 'NMAC' chunk contains number of accounts
+        def parse_chunk_NMAC stream
+            stream.read
+        end
     end
 end

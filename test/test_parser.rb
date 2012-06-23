@@ -55,4 +55,10 @@ class ParserTest < Test::Unit::TestCase
         assert_equal 1, @parser.chunks['ENCU'].length
         assert_equal 'postlass@gmail.com', @parser.chunks['ENCU'][0]
     end
+
+    def test_chunk_NMAC
+        assert @parser.chunks.keys.include? 'NMAC'
+        assert_equal 1, @parser.chunks['NMAC'].length
+        assert_equal '8', @parser.chunks['NMAC'][0]
+    end
 end
