@@ -45,20 +45,24 @@ class ParserTest < Test::Unit::TestCase
     end
 
     def test_chunk_LPAV
-        assert @parser.chunks.keys.include? 'LPAV'
-        assert_equal 1, @parser.chunks['LPAV'].length
-        assert_equal '9', @parser.chunks['LPAV'][0]
+        check_only_one_chunk 'LPAV', '9'
     end
 
     def test_chunk_ENCU
-        assert @parser.chunks.keys.include? 'ENCU'
-        assert_equal 1, @parser.chunks['ENCU'].length
-        assert_equal 'postlass@gmail.com', @parser.chunks['ENCU'][0]
+        check_only_one_chunk 'ENCU', 'postlass@gmail.com'
     end
 
     def test_chunk_NMAC
-        assert @parser.chunks.keys.include? 'NMAC'
-        assert_equal 1, @parser.chunks['NMAC'].length
-        assert_equal '8', @parser.chunks['NMAC'][0]
+        check_only_one_chunk 'NMAC', '8'
+    end
+
+    #
+    # Helpers
+    #
+
+    def check_only_one_chunk id, value
+        assert @parser.chunks.keys.include? id
+        assert_equal 1, @parser.chunks[id].length
+        assert_equal value, @parser.chunks[id][0]
     end
 end
