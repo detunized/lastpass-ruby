@@ -259,6 +259,18 @@ class ParserPrivateTest < Test::Unit::TestCase
         end
     end
 
+    def test_decode_aes256_cbc_plain
+        test_data = {
+            '' => '',
+            '0123456789' => 'IQ+hiIy0vGG4srsHmXChe3ehWc/rYPnfiyqOG8h78DdX'.decode64,
+            'All your base are belong to us' => 'IcokDWmjOkKtLpZehWKL6666Uj6fNXPpX6lLWlou+1Lrwb+D3ymP6BAwd6C0TB3hSA=='.decode64
+        }
+
+        test_data.each do |decoded, encoded|
+            assert_equal decoded, @parser.decode_aes256_cbc_plain(encoded)
+        end
+    end
+
     #
     # Parsing
     #

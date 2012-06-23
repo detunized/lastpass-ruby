@@ -152,6 +152,22 @@ module LastPass
             decode_aes256_ecb_plain decode_base64 data
         end
 
+        # LastPass AES-256/CBC encryted string starts with '!'.
+        # Next 16 bytes are the IV for the cipher.
+        # And the rest is the encrypted payload.
+        def decode_aes256_cbc_plain data
+            if data.empty?
+                ''
+            else
+                # TODO: Check for input validity!
+                aes = OpenSSL::Cipher::Cipher.new 'aes-256-cbc'
+                aes.decrypt
+                aes.key = @encryption_key
+                aes.iv = data[1, 16]
+                aes.update(data[17..-1]) + aes.final
+            end
+        end
+
         #
         # Parsing
         #
