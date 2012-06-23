@@ -148,6 +148,10 @@ module LastPass
             end
         end
 
+        def decode_aes256_ecb_base64 data
+            decode_aes256_ecb_plain decode_base64 data
+        end
+
         #
         # Parsing
         #
