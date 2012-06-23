@@ -200,8 +200,8 @@ class ParserPrivateTest < Test::Unit::TestCase
             :aes256 => {'All your base are belong to us' => '!YFuiAVZgOD2K+s6y8yaMOw==|TZ1+if9ofqRKTatyUaOnfudletslMJ/RZyUwJuR/+aI='}
         }
 
-        test_data.each do |encoding, data|
-            data.each do |decoded, encoded|
+        test_data.each do |encoding, set|
+            set.each do |decoded, encoded|
                 assert_equal decoded, @parser.decode(encoded, encoding)
             end
         end
@@ -213,28 +213,20 @@ class ParserPrivateTest < Test::Unit::TestCase
     end
 
     def test_decode_base64
-        test_data = {
+        decode_and_compare :base64, {
             '' => '',
             'All your base are belong to us' => 'QWxsIHlvdXIgYmFzZSBhcmUgYmVsb25nIHRvIHVz',
             'All your base are belong to us.' => 'QWxsIHlvdXIgYmFzZSBhcmUgYmVsb25nIHRvIHVzLg==',
             'All your base are belong to us..' => 'QWxsIHlvdXIgYmFzZSBhcmUgYmVsb25nIHRvIHVzLi4=',
             'All your base are belong to us...' => 'QWxsIHlvdXIgYmFzZSBhcmUgYmVsb25nIHRvIHVzLi4u'
         }
-
-        test_data.each do |decoded, encoded|
-            assert_equal decoded, @parser.decode_base64(encoded)
-        end
     end
 
     def test_decode_hex
-        test_data = {
+        decode_and_compare :hex, {
             '' => '',
             'All your base are belong to us' => '416c6c20796f75722062617365206172652062656c6f6e6720746f207573'
         }
-
-        test_data.each do |decoded, encoded|
-            assert_equal decoded, @parser.decode_hex(encoded)
-        end
     end
 
     def test_decode_aes256
@@ -259,58 +251,40 @@ class ParserPrivateTest < Test::Unit::TestCase
         ]
 
         test_data.each do |set|
-            set.each do |decoded, encoded|
-                assert_equal decoded, @parser.decode_aes256(encoded)
-            end
+            decode_and_compare :aes256, set
         end
     end
 
     def test_decode_aes256_ecb_plain
-        test_data = {
+        decode_and_compare :aes256_ecb_plain, {
             '' => '',
             '0123456789' => '8mHxIA8rul6eq72a/Gq2iw=='.decode64,
             'All your base are belong to us' => 'BNhd3Q3ZVODxk9c0C788NUPTIfYnZuxXfkghtMJ8jVM='.decode64
         }
-
-        test_data.each do |decoded, encoded|
-            assert_equal decoded, @parser.decode_aes256_ecb_plain(encoded)
-        end
     end
 
     def test_decode_aes256_ecb_base64
-        test_data = {
+        decode_and_compare :aes256_ecb_base64, {
             '' => '',
             '0123456789' => '8mHxIA8rul6eq72a/Gq2iw==',
             'All your base are belong to us' => 'BNhd3Q3ZVODxk9c0C788NUPTIfYnZuxXfkghtMJ8jVM='
         }
-
-        test_data.each do |decoded, encoded|
-            assert_equal decoded, @parser.decode_aes256_ecb_base64(encoded)
-        end
     end
 
     def test_decode_aes256_cbc_plain
-        test_data = {
+        decode_and_compare :aes256_cbc_plain, {
             '' => '',
             '0123456789' => 'IQ+hiIy0vGG4srsHmXChe3ehWc/rYPnfiyqOG8h78DdX'.decode64,
             'All your base are belong to us' => 'IcokDWmjOkKtLpZehWKL6666Uj6fNXPpX6lLWlou+1Lrwb+D3ymP6BAwd6C0TB3hSA=='.decode64
         }
-
-        test_data.each do |decoded, encoded|
-            assert_equal decoded, @parser.decode_aes256_cbc_plain(encoded)
-        end
     end
 
     def test_decode_aes256_cbc_base64
-        test_data = {
+        decode_and_compare :aes256_cbc_base64, {
             '' => '',
             '0123456789' => '!6TZb9bbrqpocMaNgFjrhjw==|f7RcJ7UowesqGk+um+P5ug==',
             'All your base are belong to us' => '!YFuiAVZgOD2K+s6y8yaMOw==|TZ1+if9ofqRKTatyUaOnfudletslMJ/RZyUwJuR/+aI='
         }
-
-        test_data.each do |decoded, encoded|
-            assert_equal decoded, @parser.decode_aes256_cbc_base64(encoded)
-        end
     end
 
     #
@@ -371,5 +345,12 @@ class ParserPrivateTest < Test::Unit::TestCase
     # Example: item = {:size => 10, :payload => '0123456789'}
     def pack_item item
         [item[:size], item[:payload]].pack('Na*')
+    end
+
+    # data is a map of decoded => encoded.
+    def decode_and_compare decoder, data
+        data.each do |decoded, encoded|
+            assert_equal decoded, @parser.send("decode_#{decoder}", encoded)
+        end
     end
 end
