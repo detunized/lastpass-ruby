@@ -38,6 +38,21 @@ module LastPass
             end
         end
 
+        # Binary blob received from LastPass, which should handed off to the parser
+        attr_reader :blob
+
+        # The encryption key, which also have to be sent to the parser for it to be able
+        # to decrypt the account data.
+        attr_reader :encryption_key
+
+        # Number of iterations used in the key generation process.  It could be stored and
+        # used later to save one extra request during the fetch process.  Normally, when
+        # an incorrect number is given, the LastPass server responds with the correct one
+        # and the key/hash pair is regenerated and sent back in the follow-up request.
+        # You can also see this number in your account settings under General ->
+        # Password Iterations (PBKDF2).  Set it to something big, like 500 or even bigger.
+        attr_reader :iterations
+
         private
 
         def initialize username, password, iterations
@@ -47,11 +62,12 @@ module LastPass
         end
 
         def fetch
-            login
+            @blob = fetch_blob login
         end
 
+        # Returns the created session id
         def login
-            @key = Fetcher.make_key @username, @password, @iterations
+            @encryption_key = Fetcher.make_key @username, @password, @iterations
 
             options = {
                 'method' => 'mobile',
@@ -62,14 +78,15 @@ module LastPass
                 'iterations' => @iterations
             }
 
-            handle_response HTTParty.post 'https://lastpass.com/login.php', {
+            handle_login_response HTTParty.post 'https://lastpass.com/login.php', {
                 :output => 'xml',
                 :query => options,
                 :body => options
             }
         end
 
-        def handle_response response
+        # Returns the created session id
+        def handle_login_response response
             if !Net::HTTPOK === response.response
                 raise RuntimeError, "Failed to login: '#{response}'"
             end
@@ -80,7 +97,7 @@ module LastPass
             end
 
             if Hash === parsed_response['ok'] && (session_id = parsed_response['ok']['sessionid'])
-                @session_id = session_id
+                session_id
             elsif Hash === parsed_response['response'] && Hash === parsed_response['response']['error']
                 if iterations = parsed_response['response']['error']['iterations']
                     @iterations = iterations.to_i
@@ -92,6 +109,21 @@ module LastPass
                 end
             else
                 raise RuntimeError, 'Failed to login, the reason is unknown'
+            end
+        end
+
+        # Returns the blob which should be passed by the client to the parser
+        def fetch_blob session_id
+            response = HTTParty.get(
+                "https://lastpass.com/getaccts.php?mobile=1&b64=1&hash=0.0",
+                :output => :plain,
+                :cookies => {'PHPSESSID' => URI.encode(session_id)}
+            )
+
+            if Net::HTTPOK === response.response
+                response.parsed_response
+            else
+                raise RuntimeError, "Failed to fetch data from LastPass"
             end
         end
     end

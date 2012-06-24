@@ -3,9 +3,6 @@ require 'lastpass'
 require_relative 'helper'
 
 class FetcherTest < Test::Unit::TestCase
-    def setup
-    end
-
     def test_make_key
         keys = {
             1 => 'C/Bh2SGWxI8JDu54DbbpV8J9wa6pKbesIb9MAXkeF3Y='.decode64,
@@ -36,5 +33,14 @@ class FetcherTest < Test::Unit::TestCase
         hashes.each do |iterations, hash|
             assert_equal hash, LastPass::Fetcher.make_hash('postlass@gmail.com', 'pl1234567890', iterations)
         end
+    end
+
+    # This is a slow test that goes on the internets to fetch some data from LastPass.
+    # Disabled by default.  To enable, remove the leading underscore.
+    def _test_fetch
+        fetcher = LastPass::Fetcher.fetch 'postlass@gmail.com', 'pl1234567890'
+        assert_equal 'OfOUvVnQzB4v49sNh4+PdwIFb9Fr5+jVfWRTf+E2Ghg='.decode64, fetcher.encryption_key
+        assert_equal 500, fetcher.iterations
+        assert_match /^TFBB/, fetcher.blob
     end
 end
