@@ -15,6 +15,19 @@ module LastPass
                     ).bin_string.force_encoding 'BINARY'
                 end
             end
+
+            def make_hash(username, password, iterations = 1)
+                if iterations == 1
+                    Digest::SHA256.hexdigest(Digest.hexencode(make_key(username, password, 1)) + password)
+                else
+                    PBKDF2.new(
+                        :password => make_key(username, password, iterations),
+                        :salt => password,
+                        :iterations => 1,
+                        :key_length => 32
+                    ).hex_string
+                end
+            end
         end
     end
 end
