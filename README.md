@@ -12,13 +12,13 @@ use.  For examples for now please check with the tests.
 
 A quick example of accessing your account information:
 
-    ```ruby
-    require 'lastpass.rb'
+```ruby
+require 'lastpass.rb'
 
-    fetcher = LastPass::Fetcher.fetch 'username', 'password'
-    parser = LastPass::Parser.parse fetcher.blob, fetcher.encryption_key
-    accounts = parser.chunks['ACCT']
-    ```
+fetcher = LastPass::Fetcher.fetch 'username', 'password'
+parser = LastPass::Parser.parse fetcher.blob, fetcher.encryption_key
+accounts = parser.chunks['ACCT']
+```
 
 The blob you receive from LastPass could be stored in a file and reused later on.
 
