@@ -36,11 +36,24 @@ class FetcherTest < Test::Unit::TestCase
     end
 
     # This is a slow test that goes on the internets to fetch some data from LastPass.
-    # Disabled by default.  To enable, remove the leading underscore.
+    # Disabled by default. To enable, remove the leading underscore.
+    # This test also requires the correct credentials to access the LastPass account.
+    # For the time being they are kept private. So even if you plug yours, the encription_key and
+    # the number of iterations would be different. The test would fail.
+    # TODO: Provide a public test account.
     def _test_fetch
-        fetcher = LastPass::Fetcher.fetch 'postlass@gmail.com', 'pl1234567890'
-        assert_equal 'OfOUvVnQzB4v49sNh4+PdwIFb9Fr5+jVfWRTf+E2Ghg='.decode64, fetcher.encryption_key
-        assert_equal 500, fetcher.iterations
+        assert File.exists?('test/credentials.yaml'),
+               "test/credentials.yaml doesn't exists, please create one (see test/credentials.yaml.example)"
+
+        credentials = YAML.load_file 'test/credentials.yaml'
+        email = credentials['email']
+        password = credentials['password']
+        assert_not_nil email
+        assert_not_nil password
+
+        fetcher = LastPass::Fetcher.fetch email, password
+        assert_equal 'p8utF7ZB8yD06SrtrD4hsdvEOiBU1Y19cr2dhG9DWZg='.decode64, fetcher.encryption_key
+        assert_equal 5000, fetcher.iterations
         assert_match /^TFBB/, fetcher.blob
     end
 end
