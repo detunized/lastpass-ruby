@@ -5,6 +5,7 @@ require "pbkdf2"
 require "httparty"
 
 require_relative "session"
+require_relative "exceptions"
 
 module LastPass
     class Fetcher
@@ -18,7 +19,7 @@ module LastPass
                                       format: :plain,
                                       cookies: {"PHPSESSID" => URI.encode(session.id)}
 
-            raise "Failed to fetch data from LastPass" unless response.response.is_a? Net::HTTPOK
+            raise NetworkError unless response.response.is_a? Net::HTTPOK
             response.parsed_response
         end
 
@@ -26,7 +27,7 @@ module LastPass
             response = web_client.post "https://lastpass.com/iterations.php",
                                        query: {email: username}
 
-            raise "Failed to request iterations" unless response.response.is_a? Net::HTTPOK
+            raise NetworkError unless response.response.is_a? Net::HTTPOK
             response.parsed_response.to_i
         end
 
@@ -42,7 +43,7 @@ module LastPass
                                            iterations: key_iteration_count
                                        }
 
-            raise "HTTP error" unless response.response.is_a? Net::HTTPOK
+            raise NetworkError unless response.response.is_a? Net::HTTPOK
 
             parsed_response = response.parsed_response
             raise "Invalid response" unless parsed_response.is_a? Hash

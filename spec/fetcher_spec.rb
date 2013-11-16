@@ -35,7 +35,7 @@ describe LastPass::Fetcher do
             expect {
                 LastPass::Fetcher.request_iteration_count @username,
                                                           double("web_client", post: http_error)
-            }.to raise_error("Failed to request iterations")
+            }.to raise_error LastPass::NetworkError
         end
     end
 
@@ -49,13 +49,21 @@ describe LastPass::Fetcher do
         end
 
         it "returns a session" do
-            expect(web_client = double("web_client")).to receive(:post)
-                .with("https://lastpass.com/login.php", format: :xml, body: anything)
-                .and_return(http_ok("ok" => {"sessionid" => @session_id}))
-
             expect(
-                LastPass::Fetcher.request_login @username, @password, @key_iteration_count, web_client
+                LastPass::Fetcher.request_login @username,
+                                                @password,
+                                                @key_iteration_count,
+                                                double("web_client", post: http_ok("ok" => {"sessionid" => @session_id}))
             ).to satisfy { |s| s.id == @session_id && s.key_iteration_count == @key_iteration_count }
+        end
+
+        it "raises an exception on HTTP error" do
+            expect {
+                LastPass::Fetcher.request_login @username,
+                                                @password,
+                                                @key_iteration_count,
+                                                double("web_client", post: http_error)
+            }.to raise_error LastPass::NetworkError
         end
     end
 
@@ -74,6 +82,12 @@ describe LastPass::Fetcher do
             expect(
                 LastPass::Fetcher.fetch @session, double("web_client", get: http_ok(@blob))
             ).to eq @blob
+        end
+
+        it "raises an exception on HTTP error" do
+            expect {
+                LastPass::Fetcher.fetch @session, double("web_client", get: http_error)
+            }   .to raise_error LastPass::NetworkError
         end
     end
 
