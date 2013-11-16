@@ -71,12 +71,9 @@ describe LastPass::Fetcher do
     #
     private
 
-    before :all do
-        @mock_response_type = Struct.new :response, :parsed_response
-    end
-
     def mock_response type, code, body
-        @mock_response_type.new type.new("1.1", code, ""), body
+        double response: type.new("1.1", code, ""),
+               parsed_response: body
     end
 
     def http_ok body
