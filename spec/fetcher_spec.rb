@@ -1,6 +1,12 @@
 require "spec_helper"
 
 describe LastPass::Fetcher do
+    before :all do
+        @username = "lastpass.ruby@gmail.com"
+        @password = "it's classified"
+        @key_iteration_count = 5000
+    end
+
     it "#request_iteration_count returns correct value" do
         HTTParty
             .should_receive(:post).with("https://lastpass.com/iterations.php", query: {email: "lastpass.ruby@gmail.com"})
@@ -15,6 +21,13 @@ describe LastPass::Fetcher do
             .and_return(Struct.new(:response, :parsed_response).new(Net::HTTPNotFound.new("1.1", 404, "Not Found"), ""))
 
         expect { LastPass::Fetcher.request_iteration_count("lastpass.ruby@gmail.com") }.to raise_error
+    end
+
+    it "#request_login returns response" do
+        HTTParty
+            .should_receive(:post).with("https://lastpass.com/login.php", format: :xml, body: anything)
+
+        LastPass::Fetcher.request_login @username, @password, @key_iteration_count
     end
 
     it "generates correct keys" do

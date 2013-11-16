@@ -18,6 +18,19 @@ module LastPass
             end
         end
 
+        def self.request_login username, password, key_iteration_count
+            options = {
+                method: "mobile",
+                web: 1,
+                xml: 1,
+                username: username,
+                hash: Fetcher.make_hash(username, password, key_iteration_count),
+                iterations: key_iteration_count
+            }
+
+            HTTParty.post "https://lastpass.com/login.php", format: :xml, body: options
+        end
+
         def self.make_key username, password, iterations = 1
             if iterations == 1
                 Digest::SHA256.digest username + password
