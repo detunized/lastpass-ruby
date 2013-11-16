@@ -108,35 +108,8 @@ module LastPass
 
         private
 
-        def initialize username, password, iterations
-            @username = username
-            @password = password
-            @iterations = iterations
-        end
-
-        def fetch
-            @blob = fetch_blob login
-        end
-
-        # Returns the created session id
-        def login
-            @encryption_key = Fetcher.make_key @username, @password, @iterations
-
-            options = {
-                "method" => "mobile",
-                "web" => 1,
-                "xml" => 1,
-                "username" => @username,
-                "hash" => Fetcher.make_hash(@username, @password, @iterations),
-                "iterations" => @iterations
-            }
-
-            handle_login_response HTTParty.post "https://lastpass.com/login.php", {
-                :output => "xml",
-                :query => options,
-                :body => options
-            }
-        end
+        # Can't instantiate Fetcher
+        private_class_method :new
 
         # Returns the created session id
         def handle_login_response response
@@ -162,21 +135,6 @@ module LastPass
                 end
             else
                 raise RuntimeError, "Failed to login, the reason is unknown"
-            end
-        end
-
-        # Returns the blob which should be passed by the client to the parser
-        def fetch_blob session_id
-            response = HTTParty.get(
-                "https://lastpass.com/getaccts.php?mobile=1&b64=1&hash=0.0",
-                :output => :plain,
-                :cookies => {"PHPSESSID" => URI.encode(session_id)}
-            )
-
-            if Net::HTTPOK === response.response
-                response.parsed_response
-            else
-                raise RuntimeError, "Failed to fetch data from LastPass"
             end
         end
     end
