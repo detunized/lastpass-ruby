@@ -33,8 +33,10 @@ describe LastPass::Fetcher do
 
     describe ".request_login" do
         it "issues a POST request" do
-            expect(HTTParty).to receive(:post).with("https://lastpass.com/login.php", format: :xml, body: anything)
-            LastPass::Fetcher.request_login @username, @password, @key_iteration_count
+            expect(web_client = double("web_client")).to receive(:post)
+                .with("https://lastpass.com/login.php", format: :xml, body: anything)
+
+            LastPass::Fetcher.request_login @username, @password, @key_iteration_count, web_client
         end
     end
 

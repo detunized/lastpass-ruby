@@ -18,7 +18,7 @@ module LastPass
             end
         end
 
-        def self.request_login username, password, key_iteration_count
+        def self.request_login username, password, key_iteration_count, web_client = HTTParty
             options = {
                 method: "mobile",
                 web: 1,
@@ -28,7 +28,7 @@ module LastPass
                 iterations: key_iteration_count
             }
 
-            HTTParty.post "https://lastpass.com/login.php", format: :xml, body: options
+            web_client.post "https://lastpass.com/login.php", format: :xml, body: options
         end
 
         def self.make_key username, password, iterations = 1
