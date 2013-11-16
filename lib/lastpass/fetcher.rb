@@ -23,11 +23,8 @@ module LastPass
             response = web_client.post "https://lastpass.com/iterations.php",
                                        query: {email: username}
 
-            if response.response.is_a? Net::HTTPOK
-                response.parsed_response.to_i
-            else
-                raise "Failed to request iterations"
-            end
+            raise "Failed to request iterations" unless response.response.is_a? Net::HTTPOK
+            response.parsed_response.to_i
         end
 
         def self.request_login username, password, key_iteration_count, web_client = HTTParty
