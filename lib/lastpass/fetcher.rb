@@ -1,6 +1,8 @@
 require 'pbkdf2'
 require 'httparty'
 
+require_relative 'session'
+
 module LastPass
     class Fetcher
         class << self
