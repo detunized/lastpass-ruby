@@ -1,42 +1,55 @@
-require 'pbkdf2'
-require 'httparty'
+require "pbkdf2"
+require "httparty"
 
-require_relative 'session'
+require_relative "session"
 
 module LastPass
     class Fetcher
+        def self.login username, password
+            key_iteration_count = request_iteration_count username
+        end
+
+        def self.request_iteration_count username
+            response = HTTParty.post "https://lastpass.com/iterations.php", query: {email: username}
+            if response.response.is_a? Net::HTTPOK
+                response.parsed_response.to_i
+            else
+                raise "Failed to request iterations"
+            end
+        end
+
+        def self.make_key username, password, iterations = 1
+            if iterations == 1
+                Digest::SHA256.digest username + password
+            else
+                PBKDF2.new(
+                    :password => password,
+                    :salt => username,
+                    :iterations => iterations,
+                    :key_length => 32
+                ).bin_string.force_encoding "BINARY"
+            end
+        end
+
+        def self.make_hash username, password, iterations = 1
+            if iterations == 1
+                Digest::SHA256.hexdigest(Digest.hexencode(make_key(username, password, 1)) + password)
+            else
+                PBKDF2.new(
+                    :password => make_key(username, password, iterations),
+                    :salt => password,
+                    :iterations => 1,
+                    :key_length => 32
+                ).hex_string
+            end
+        end
+
         class << self
             def fetch username, password, iterations = 1
                 fetcher = Fetcher.new username, password, iterations
                 fetcher.send :fetch # To avoid exposing fetch
 
                 fetcher
-            end
-
-            def make_key username, password, iterations = 1
-                if iterations == 1
-                    Digest::SHA256.digest username + password
-                else
-                    PBKDF2.new(
-                        :password => password,
-                        :salt => username,
-                        :iterations => iterations,
-                        :key_length => 32
-                    ).bin_string.force_encoding 'BINARY'
-                end
-            end
-
-            def make_hash username, password, iterations = 1
-                if iterations == 1
-                    Digest::SHA256.hexdigest(Digest.hexencode(make_key(username, password, 1)) + password)
-                else
-                    PBKDF2.new(
-                        :password => make_key(username, password, iterations),
-                        :salt => password,
-                        :iterations => 1,
-                        :key_length => 32
-                    ).hex_string
-                end
             end
         end
 
@@ -72,16 +85,16 @@ module LastPass
             @encryption_key = Fetcher.make_key @username, @password, @iterations
 
             options = {
-                'method' => 'mobile',
-                'web' => 1,
-                'xml' => 1,
-                'username' => @username,
-                'hash' => Fetcher.make_hash(@username, @password, @iterations),
-                'iterations' => @iterations
+                "method" => "mobile",
+                "web" => 1,
+                "xml" => 1,
+                "username" => @username,
+                "hash" => Fetcher.make_hash(@username, @password, @iterations),
+                "iterations" => @iterations
             }
 
-            handle_login_response HTTParty.post 'https://lastpass.com/login.php', {
-                :output => 'xml',
+            handle_login_response HTTParty.post "https://lastpass.com/login.php", {
+                :output => "xml",
                 :query => options,
                 :body => options
             }
@@ -98,19 +111,19 @@ module LastPass
                 raise RuntimeError, "Failed to login, cannot parse the response: '#{response}'"
             end
 
-            if Hash === parsed_response['ok'] && (session_id = parsed_response['ok']['sessionid'])
+            if Hash === parsed_response["ok"] && (session_id = parsed_response["ok"]["sessionid"])
                 session_id
-            elsif Hash === parsed_response['response'] && Hash === parsed_response['response']['error']
-                if iterations = parsed_response['response']['error']['iterations']
+            elsif Hash === parsed_response["response"] && Hash === parsed_response["response"]["error"]
+                if iterations = parsed_response["response"]["error"]["iterations"]
                     @iterations = iterations.to_i
                     login
-                elsif message = parsed_response['response']['error']['message']
+                elsif message = parsed_response["response"]["error"]["message"]
                     raise RuntimeError, "Failed to login, LastPass says '#{message}'"
                 elsif
-                    raise RuntimeError, 'Failed to login, LastPass responded with an unknown error'
+                    raise RuntimeError, "Failed to login, LastPass responded with an unknown error"
                 end
             else
-                raise RuntimeError, 'Failed to login, the reason is unknown'
+                raise RuntimeError, "Failed to login, the reason is unknown"
             end
         end
 
@@ -119,7 +132,7 @@ module LastPass
             response = HTTParty.get(
                 "https://lastpass.com/getaccts.php?mobile=1&b64=1&hash=0.0",
                 :output => :plain,
-                :cookies => {'PHPSESSID' => URI.encode(session_id)}
+                :cookies => {"PHPSESSID" => URI.encode(session_id)}
             )
 
             if Net::HTTPOK === response.response
