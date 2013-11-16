@@ -65,6 +65,15 @@ describe LastPass::Fetcher do
                                                 double("web_client", post: http_error)
             }.to raise_error LastPass::NetworkError
         end
+
+        it "raises an exception when response is not a hash" do
+            expect {
+                LastPass::Fetcher.request_login @username,
+                                                @password,
+                                                @key_iteration_count,
+                                                double("web_client", post: http_ok("not a hash"))
+            }.to raise_error LastPass::InvalidResponse
+        end
     end
 
     describe ".fetch" do

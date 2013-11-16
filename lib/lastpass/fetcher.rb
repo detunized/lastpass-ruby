@@ -46,7 +46,7 @@ module LastPass
             raise NetworkError unless response.response.is_a? Net::HTTPOK
 
             parsed_response = response.parsed_response
-            raise "Invalid response" unless parsed_response.is_a? Hash
+            raise InvalidResponse unless parsed_response.is_a? Hash
 
             create_session parsed_response, key_iteration_count or
                 raise login_error parsed_response
@@ -65,7 +65,7 @@ module LastPass
         end
 
         def self.login_error parsed_response
-            "Login failed"
+            InvalidResponse
         end
 
         def self.make_key username, password, key_iteration_count
