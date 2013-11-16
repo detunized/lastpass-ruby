@@ -10,7 +10,9 @@ module LastPass
         end
 
         def self.request_iteration_count username, web_client = HTTParty
-            response = web_client.post "https://lastpass.com/iterations.php", query: {email: username}
+            response = web_client.post "https://lastpass.com/iterations.php",
+                                       query: {email: username}
+
             if response.response.is_a? Net::HTTPOK
                 response.parsed_response.to_i
             else
@@ -31,35 +33,36 @@ module LastPass
             web_client.post "https://lastpass.com/login.php", format: :xml, body: options
         end
 
-        def self.make_key username, password, iterations = 1
-            if iterations == 1
+        def self.make_key username, password, key_iteration_count
+            if key_iteration_count == 1
                 Digest::SHA256.digest username + password
             else
-                PBKDF2.new(
-                    :password => password,
-                    :salt => username,
-                    :iterations => iterations,
-                    :key_length => 32
-                ).bin_string.force_encoding "BINARY"
+                PBKDF2
+                    .new(password: password,
+                         salt: username,
+                         iterations: key_iteration_count,
+                         key_length: 32)
+                    .bin_string
+                    .force_encoding "BINARY"
             end
         end
 
-        def self.make_hash username, password, iterations = 1
-            if iterations == 1
-                Digest::SHA256.hexdigest(Digest.hexencode(make_key(username, password, 1)) + password)
+        def self.make_hash username, password, key_iteration_count
+            if key_iteration_count == 1
+                Digest::SHA256.hexdigest Digest.hexencode(make_key(username, password, 1)) + password
             else
-                PBKDF2.new(
-                    :password => make_key(username, password, iterations),
-                    :salt => password,
-                    :iterations => 1,
-                    :key_length => 32
-                ).hex_string
+                PBKDF2
+                    .new(password: make_key(username, password, key_iteration_count),
+                         salt: password,
+                         iterations: 1,
+                         key_length: 32)
+                    .hex_string
             end
         end
 
         class << self
             def fetch username, password, iterations = 1
-                fetcher = Fetcher.new username, password, iterations
+                fetcher = Fetcher.new username, password, key_iteration_count
                 fetcher.send :fetch # To avoid exposing fetch
 
                 fetcher
