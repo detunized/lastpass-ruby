@@ -7,23 +7,31 @@ describe LastPass::Fetcher do
         @key_iteration_count = 5000
     end
 
-    describe "#request_iteration_count" do
-        it "returns correct value" do
-            expect(HTTParty).to \
-                receive(:post)
-                    .with("https://lastpass.com/iterations.php", query: {email: @username})
-                    .and_return(http_ok(@key_iteration_count.to_s))
+    describe ".request_iteration_count" do
+        it "makes a POST request" do
+            expect(web_client = double("web_client")).to receive(:post)
+                .with("https://lastpass.com/iterations.php", query: {email: @username})
+                .and_return(http_ok(@key_iteration_count.to_s))
 
-            expect(LastPass::Fetcher.request_iteration_count @username).to eq 5000
+            LastPass::Fetcher.request_iteration_count @username, web_client
+        end
+
+        it "returns key iteration count" do
+            expect(
+                LastPass::Fetcher.request_iteration_count @username,
+                                                          double("web_client", post: http_ok(@key_iteration_count.to_s))
+            ).to eq @key_iteration_count
         end
 
         it "raises an exception on HTTP error" do
-            expect(HTTParty).to receive(:post).and_return(http_error)
-            expect { LastPass::Fetcher.request_iteration_count @username }.to raise_error("Failed to request iterations")
+            expect {
+                LastPass::Fetcher.request_iteration_count @username,
+                                                          double("web_client", post: http_error)
+            }.to raise_error("Failed to request iterations")
         end
     end
 
-    describe "#request_login" do
+    describe ".request_login" do
         it "issues a POST request" do
             expect(HTTParty).to receive(:post).with("https://lastpass.com/login.php", format: :xml, body: anything)
             LastPass::Fetcher.request_login @username, @password, @key_iteration_count

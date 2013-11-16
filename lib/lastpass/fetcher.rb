@@ -9,8 +9,8 @@ module LastPass
             key_iteration_count = request_iteration_count username
         end
 
-        def self.request_iteration_count username
-            response = HTTParty.post "https://lastpass.com/iterations.php", query: {email: username}
+        def self.request_iteration_count username, web_client = HTTParty
+            response = web_client.post "https://lastpass.com/iterations.php", query: {email: username}
             if response.response.is_a? Net::HTTPOK
                 response.parsed_response.to_i
             else
