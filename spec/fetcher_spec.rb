@@ -7,6 +7,9 @@ describe LastPass::Fetcher do
         @key_iteration_count = 5000
 
         @session_id = "53ru,Hb713QnEVM5zWZ16jMvxS0"
+        @session = LastPass::Session.new @session_id, @key_iteration_count
+
+        @blob = "TFBBVgAAAAMxMjJQUkVNAAAACjE0MTQ5"
     end
 
     describe ".request_iteration_count" do
@@ -34,7 +37,7 @@ describe LastPass::Fetcher do
     end
 
     describe ".request_login" do
-        it "issues a POST request" do
+        it "makes a POST request" do
             expect(web_client = double("web_client")).to receive(:post)
                 .with("https://lastpass.com/login.php", format: :xml, body: anything)
                 .and_return(http_ok("ok" => {"sessionid" => @session_id}))
@@ -50,6 +53,24 @@ describe LastPass::Fetcher do
             expect(
                 LastPass::Fetcher.request_login @username, @password, @key_iteration_count, web_client
             ).to satisfy { |s| s.id == @session_id && s.key_iteration_count == @key_iteration_count }
+        end
+    end
+
+    describe ".fetch" do
+        it "makes a GET request" do
+            expect(web_client = double("web_client")).to receive(:get)
+                .with("https://lastpass.com/getaccts.php?mobile=1&b64=1&hash=0.0",
+                      format: :plain,
+                      cookies: {"PHPSESSID" => @session_id})
+                .and_return(http_ok(@blob))
+
+            LastPass::Fetcher.fetch @session, web_client
+        end
+
+        it "returns a blob" do
+            expect(
+                LastPass::Fetcher.fetch @session, double("web_client", get: http_ok(@blob))
+            ).to eq @blob
         end
     end
 

@@ -10,6 +10,15 @@ module LastPass
             request_login username, password, key_iteration_count
         end
 
+        def self.fetch session, web_client = HTTParty
+            response = web_client.get "https://lastpass.com/getaccts.php?mobile=1&b64=1&hash=0.0",
+                                      format: :plain,
+                                      cookies: {"PHPSESSID" => URI.encode(session.id)}
+
+            raise "Failed to fetch data from LastPass" unless response.response.is_a? Net::HTTPOK
+            response.parsed_response
+        end
+
         def self.request_iteration_count username, web_client = HTTParty
             response = web_client.post "https://lastpass.com/iterations.php",
                                        query: {email: username}
@@ -82,15 +91,6 @@ module LastPass
                          iterations: 1,
                          key_length: 32)
                     .hex_string
-            end
-        end
-
-        class << self
-            def fetch username, password, iterations = 1
-                fetcher = Fetcher.new username, password, key_iteration_count
-                fetcher.send :fetch # To avoid exposing fetch
-
-                fetcher
             end
         end
 
