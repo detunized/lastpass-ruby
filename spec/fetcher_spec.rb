@@ -2,25 +2,25 @@ require "spec_helper"
 
 describe LastPass::Fetcher do
     before :all do
-        @username = "lastpass.ruby@gmail.com"
-        @password = "it's classified"
+        @username = "username"
+        @password = "password"
         @key_iteration_count = 5000
     end
 
     it "#request_iteration_count returns correct value" do
         HTTParty
-            .should_receive(:post).with("https://lastpass.com/iterations.php", query: {email: "lastpass.ruby@gmail.com"})
-            .and_return(Struct.new(:response, :parsed_response).new(Net::HTTPOK.new("1.1", 200, "OK"), "5000"))
+            .should_receive(:post).with("https://lastpass.com/iterations.php", query: {email: @username})
+            .and_return(http_ok(@key_iteration_count.to_s))
 
-        LastPass::Fetcher.request_iteration_count("lastpass.ruby@gmail.com").should == 5000
+        LastPass::Fetcher.request_iteration_count(@username).should == 5000
     end
 
     it "#request_iteration_count raises an exception on HTTP error" do
         HTTParty
             .should_receive(:post)
-            .and_return(Struct.new(:response, :parsed_response).new(Net::HTTPNotFound.new("1.1", 404, "Not Found"), ""))
+            .and_return(http_error)
 
-        expect { LastPass::Fetcher.request_iteration_count("lastpass.ruby@gmail.com") }.to raise_error
+        expect { LastPass::Fetcher.request_iteration_count(@username) }.to raise_error("Failed to request iterations")
     end
 
     it "#request_login returns response" do
@@ -56,5 +56,26 @@ describe LastPass::Fetcher do
         hash(100) == "82fc12024acb618878ba231a9948c49c6f46e30b5a09c11d87f6d3338babacb5"
         hash(500) == "3139861ae962801b59fc41ff7eeb11f84ca56d810ab490f0d8c89d9d9ab07aa6"
         hash(1000) == "03161354566c396fcd624a424164160e890e96b4b5fa6d942fc6377ab613513b"
+    end
+
+    #
+    # Helpers
+    #
+    private
+
+    before :all do
+        @mock_response_type = Struct.new :response, :parsed_response
+    end
+
+    def mock_response type, code, body
+        @mock_response_type.new type.new("1.1", code, ""), body
+    end
+
+    def http_ok body
+        mock_response Net::HTTPOK, 200, body
+    end
+
+    def http_error body = ""
+        mock_response Net::HTTPNotFound, 404, body
     end
 end
