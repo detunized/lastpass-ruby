@@ -7,6 +7,7 @@ module LastPass
     class Fetcher
         def self.login username, password
             key_iteration_count = request_iteration_count username
+            request_login username, password, key_iteration_count
         end
 
         def self.request_iteration_count username, web_client = HTTParty
@@ -21,16 +22,40 @@ module LastPass
         end
 
         def self.request_login username, password, key_iteration_count, web_client = HTTParty
-            options = {
-                method: "mobile",
-                web: 1,
-                xml: 1,
-                username: username,
-                hash: Fetcher.make_hash(username, password, key_iteration_count),
-                iterations: key_iteration_count
-            }
+            response = web_client.post "https://lastpass.com/login.php",
+                                       format: :xml,
+                                       body: {
+                                           method: "mobile",
+                                           web: 1,
+                                           xml: 1,
+                                           username: username,
+                                           hash: make_hash(username, password, key_iteration_count),
+                                           iterations: key_iteration_count
+                                       }
 
-            web_client.post "https://lastpass.com/login.php", format: :xml, body: options
+            raise "HTTP error" unless response.response.is_a? Net::HTTPOK
+
+            parsed_response = response.parsed_response
+            raise "Invalid response" unless parsed_response.is_a? Hash
+
+            create_session parsed_response, key_iteration_count or
+                raise login_error parsed_response
+        end
+
+        def self.create_session parsed_response, key_iteration_count
+            ok = parsed_response["ok"]
+            if ok.is_a? Hash
+                session_id = ok["sessionid"]
+                if session_id.is_a? String
+                    return Session.new session_id, key_iteration_count
+                end
+            end
+
+            nil
+        end
+
+        def self.login_error parsed_response
+            "Login failed"
         end
 
         def self.make_key username, password, key_iteration_count
