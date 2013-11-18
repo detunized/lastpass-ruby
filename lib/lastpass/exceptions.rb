@@ -10,4 +10,10 @@ module LastPass
 
     # Server responded with something we don't understand
     class InvalidResponse < Error; end
+
+    # Server responded with XML we don't understand
+    class UnknownResponseSchema < Error; end
+
+    # LastPass error we don't know about
+    class LastPassUnknownError < Error; end
 end

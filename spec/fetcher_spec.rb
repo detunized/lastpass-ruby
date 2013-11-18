@@ -95,6 +95,36 @@ describe LastPass::Fetcher do
                                                 double("web_client", post: http_ok("not a hash"))
             }.to raise_error LastPass::InvalidResponse
         end
+
+        it "raises an exception on unknown response schema" do
+            expect {
+                LastPass::Fetcher.request_login @username,
+                                                @password,
+                                                @key_iteration_count,
+                                                double("web_client",
+                                                       post: http_ok(xml("<unknown />")))
+            }.to raise_error LastPass::UnknownResponseSchema
+        end
+
+        it "raises an exception on unknown response schema" do
+            expect {
+                LastPass::Fetcher.request_login @username,
+                                                @password,
+                                                @key_iteration_count,
+                                                double("web_client",
+                                                       post: http_ok(xml("<response />")))
+            }.to raise_error LastPass::UnknownResponseSchema
+        end
+
+        it "raises an exception on unknown response schema" do
+            expect {
+                LastPass::Fetcher.request_login @username,
+                                                @password,
+                                                @key_iteration_count,
+                                                double("web_client",
+                                                       post: http_ok(xml("<response><error /></response>")))
+            }.to raise_error LastPass::UnknownResponseSchema
+        end
     end
 
     describe ".fetch" do
@@ -169,5 +199,9 @@ describe LastPass::Fetcher do
 
     def http_error body = ""
         mock_response Net::HTTPNotFound, 404, body
+    end
+
+    def xml text
+        MultiXml.parse text
     end
 end

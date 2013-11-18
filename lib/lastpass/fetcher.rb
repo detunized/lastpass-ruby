@@ -74,6 +74,9 @@ module LastPass
         end
 
         def self.login_error parsed_response
+            error = (parsed_response["response"] || {})["error"]
+            return UnknownResponseSchema unless error.is_a? Hash
+
             InvalidResponse
         end
 
