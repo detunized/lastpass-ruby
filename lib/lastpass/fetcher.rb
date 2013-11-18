@@ -28,7 +28,16 @@ module LastPass
                                        query: {email: username}
 
             raise NetworkError unless response.response.is_a? Net::HTTPOK
-            response.parsed_response.to_i
+
+            begin
+                count = Integer response.parsed_response
+            rescue ArgumentError
+                raise InvalidResponse, "Key iteration count is invalid"
+            end
+
+            raise InvalidResponse, "Key iteration count is not positive" unless count > 0
+
+            count
         end
 
         def self.request_login username, password, key_iteration_count, web_client = HTTParty

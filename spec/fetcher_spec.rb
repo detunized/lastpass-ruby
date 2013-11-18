@@ -37,6 +37,27 @@ describe LastPass::Fetcher do
                                                           double("web_client", post: http_error)
             }.to raise_error LastPass::NetworkError
         end
+
+        it "raises an exception on invalid key iteration count" do
+            expect {
+                LastPass::Fetcher.request_iteration_count @username,
+                                                          double("web_client", post: http_ok("not a number"))
+            }.to raise_error LastPass::InvalidResponse, "Key iteration count is invalid"
+        end
+
+        it "raises an exception on zero key iteration count" do
+            expect {
+                LastPass::Fetcher.request_iteration_count @username,
+                                                          double("web_client", post: http_ok("0"))
+            }.to raise_error LastPass::InvalidResponse, "Key iteration count is not positive"
+        end
+
+        it "raises an exception on negative key iteration count" do
+            expect {
+                LastPass::Fetcher.request_iteration_count @username,
+                                                          double("web_client", post: http_ok("-1"))
+            }.to raise_error LastPass::InvalidResponse, "Key iteration count is not positive"
+        end
     end
 
     describe ".request_login" do
