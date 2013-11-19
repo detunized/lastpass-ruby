@@ -70,60 +70,28 @@ describe LastPass::Fetcher do
         end
 
         it "returns a session" do
-            expect(
-                LastPass::Fetcher.request_login @username,
-                                                @password,
-                                                @key_iteration_count,
-                                                double("web_client", post: http_ok("ok" => {"sessionid" => @session_id}))
-            ).to satisfy { |s| s.id == @session_id && s.key_iteration_count == @key_iteration_count }
+            expect(request_login_with_xml "<ok sessionid='#{@session_id}' />")
+                .to satisfy { |s| s.id == @session_id && s.key_iteration_count == @key_iteration_count }
         end
 
         it "raises an exception on HTTP error" do
-            expect {
-                LastPass::Fetcher.request_login @username,
-                                                @password,
-                                                @key_iteration_count,
-                                                double("web_client", post: http_error)
-            }.to raise_error LastPass::NetworkError
+            expect { request_login_with_error }.to raise_error LastPass::NetworkError
         end
 
         it "raises an exception when response is not a hash" do
-            expect {
-                LastPass::Fetcher.request_login @username,
-                                                @password,
-                                                @key_iteration_count,
-                                                double("web_client", post: http_ok("not a hash"))
-            }.to raise_error LastPass::InvalidResponse
+            expect { request_login_with_ok "not a hash" }.to raise_error LastPass::InvalidResponse
         end
 
         it "raises an exception on unknown response schema" do
-            expect {
-                LastPass::Fetcher.request_login @username,
-                                                @password,
-                                                @key_iteration_count,
-                                                double("web_client",
-                                                       post: http_ok(xml("<unknown />")))
-            }.to raise_error LastPass::UnknownResponseSchema
+            expect { request_login_with_xml "<unknown />" }.to raise_error LastPass::UnknownResponseSchema
         end
 
         it "raises an exception on unknown response schema" do
-            expect {
-                LastPass::Fetcher.request_login @username,
-                                                @password,
-                                                @key_iteration_count,
-                                                double("web_client",
-                                                       post: http_ok(xml("<response />")))
-            }.to raise_error LastPass::UnknownResponseSchema
+            expect { request_login_with_xml "<response />" }.to raise_error LastPass::UnknownResponseSchema
         end
 
         it "raises an exception on unknown response schema" do
-            expect {
-                LastPass::Fetcher.request_login @username,
-                                                @password,
-                                                @key_iteration_count,
-                                                double("web_client",
-                                                       post: http_ok(xml("<response><error /></response>")))
-            }.to raise_error LastPass::UnknownResponseSchema
+            expect { request_login_with_xml "<response><error /></response>" }.to raise_error LastPass::UnknownResponseSchema
         end
     end
 
@@ -203,5 +171,24 @@ describe LastPass::Fetcher do
 
     def xml text
         MultiXml.parse text
+    end
+
+    def request_login_with_xml text
+        request_login_with_ok xml text
+    end
+
+    def request_login_with_ok response
+        request_login_with_response http_ok response
+    end
+
+    def request_login_with_error
+        request_login_with_response http_error
+    end
+
+    def request_login_with_response response
+        LastPass::Fetcher.request_login @username,
+                                        @password,
+                                        @key_iteration_count,
+                                        double("web_client", post: response)
     end
 end
