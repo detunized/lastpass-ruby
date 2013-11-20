@@ -91,17 +91,32 @@ describe LastPass::Fetcher do
         end
 
         it "raises an exception on unknown response schema" do
-            expect { request_login_with_xml "<response><error /></response>" }.to raise_error LastPass::UnknownResponseSchema
+            expect { request_login_with_xml "<response><error /></response>" }
+                .to raise_error LastPass::UnknownResponseSchema
         end
 
         it "raises an exception on unknown username" do
-            expect { request_login_with_lastpass_error "unknownemail", "Unknown email address." }
-                .to raise_error LastPass::LastPassUnknownUsername
+            message = "Unknown email address."
+            expect { request_login_with_lastpass_error "unknownemail", message }
+                .to raise_error LastPass::LastPassUnknownUsername, message
         end
 
         it "raises an exception on invalid password" do
-            expect { request_login_with_lastpass_error "unknownpassword", "Invalid password!" }
-                .to raise_error LastPass::LastPassInvalidPassword
+            message = "Invalid password!"
+            expect { request_login_with_lastpass_error "unknownpassword", message }
+                .to raise_error LastPass::LastPassInvalidPassword, message
+        end
+
+        it "raises an exception on unknown LastPass error with a message" do
+            message = "Unknow error message"
+            expect { request_login_with_lastpass_error "Unknown cause", message }
+                .to raise_error LastPass::LastPassUnknownError, message
+        end
+
+        it "raises an exception on unknown LastPass error without a message" do
+            cause = "Unknown casue"
+            expect { request_login_with_lastpass_error cause }
+                .to raise_error LastPass::LastPassUnknownError, cause
         end
     end
 
@@ -184,10 +199,14 @@ describe LastPass::Fetcher do
     end
 
     def lastpass_error cause, message
-        %Q{<response><error message="#{message}" cause="#{cause}"/></response>}
+        if message
+            %Q{<response><error cause="#{cause}" message="#{message}" /></response>}
+        else
+            %Q{<response><error cause="#{cause}" /></response>}
+        end
     end
 
-    def request_login_with_lastpass_error cause, message
+    def request_login_with_lastpass_error cause, message = nil
         request_login_with_xml lastpass_error cause, message
     end
 

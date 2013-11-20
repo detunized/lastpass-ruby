@@ -83,11 +83,13 @@ module LastPass
             }
 
             cause = error["cause"]
-            return exceptions[cause] unless cause.nil?
-
             message = error["message"]
 
-            InvalidResponse
+            if cause
+                (exceptions[cause] || LastPassUnknownError).new(message || cause)
+            else
+                InvalidResponse.new message
+            end
         end
 
         def self.make_key username, password, key_iteration_count
