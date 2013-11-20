@@ -86,7 +86,7 @@ module LastPass
             message = error["message"]
 
             if cause
-                (exceptions[cause] || LastPassUnknownError).new(message || cause)
+                (exceptions[cause] || LastPassUnknownError).new message || cause
             else
                 InvalidResponse.new message
             end

@@ -5,6 +5,10 @@ module LastPass
     # Base class for all errors, should not be raised
     class Error < StandardError; end
 
+    #
+    # Generic errors
+    #
+
     # Something went wrong with the network
     class NetworkError < Error; end
 
@@ -14,12 +18,16 @@ module LastPass
     # Server responded with XML we don't understand
     class UnknownResponseSchema < Error; end
 
-    # LastPass error we don't know about
-    class LastPassUnknownError < Error; end
+    #
+    # LastPass returned errors
+    #
 
     # LastPass error: unknown username
     class LastPassUnknownUsername < Error; end
 
     # LastPass error: invalid password
     class LastPassInvalidPassword < Error; end
+
+    # LastPass error we don't know about
+    class LastPassUnknownError < Error; end
 end
