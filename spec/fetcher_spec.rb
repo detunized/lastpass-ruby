@@ -93,6 +93,16 @@ describe LastPass::Fetcher do
         it "raises an exception on unknown response schema" do
             expect { request_login_with_xml "<response><error /></response>" }.to raise_error LastPass::UnknownResponseSchema
         end
+
+        it "raises an exception on unknown username" do
+            expect { request_login_with_lastpass_error "unknownemail", "Unknown email address." }
+                .to raise_error LastPass::LastPassUnknownUsername
+        end
+
+        it "raises an exception on invalid password" do
+            expect { request_login_with_lastpass_error "unknownpassword", "Invalid password!" }
+                .to raise_error LastPass::LastPassInvalidPassword
+        end
     end
 
     describe ".fetch" do
@@ -171,6 +181,14 @@ describe LastPass::Fetcher do
 
     def xml text
         MultiXml.parse text
+    end
+
+    def lastpass_error cause, message
+        %Q{<response><error message="#{message}" cause="#{cause}"/></response>}
+    end
+
+    def request_login_with_lastpass_error cause, message
+        request_login_with_xml lastpass_error cause, message
     end
 
     def request_login_with_xml text

@@ -16,4 +16,10 @@ module LastPass
 
     # LastPass error we don't know about
     class LastPassUnknownError < Error; end
+
+    # LastPass error: unknown username
+    class LastPassUnknownUsername < Error; end
+
+    # LastPass error: invalid password
+    class LastPassInvalidPassword < Error; end
 end

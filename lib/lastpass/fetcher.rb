@@ -77,6 +77,16 @@ module LastPass
             error = (parsed_response["response"] || {})["error"]
             return UnknownResponseSchema unless error.is_a? Hash
 
+            exceptions = {
+                "unknownemail" => LastPassUnknownUsername,
+                "unknownpassword" => LastPassInvalidPassword,
+            }
+
+            cause = error["cause"]
+            return exceptions[cause] unless cause.nil?
+
+            message = error["message"]
+
             InvalidResponse
         end
 
