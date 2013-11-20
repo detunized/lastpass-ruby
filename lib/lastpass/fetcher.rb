@@ -119,51 +119,7 @@ module LastPass
             end
         end
 
-        # Binary blob received from LastPass, which should handed off to the parser
-        attr_reader :blob
-
-        # The encryption key, which also have to be sent to the parser for it to be able
-        # to decrypt the account data.
-        attr_reader :encryption_key
-
-        # Number of iterations used in the key generation process.  It could be stored and
-        # used later to save one extra request during the fetch process.  Normally, when
-        # an incorrect number is given, the LastPass server responds with the correct one
-        # and the key/hash pair is regenerated and sent back in the follow-up request.
-        # You can also see this number in your account settings under General ->
-        # Password Iterations (PBKDF2).  Set it to something big, like 500 or even bigger.
-        attr_reader :iterations
-
-        private
-
         # Can't instantiate Fetcher
         private_class_method :new
-
-        # Returns the created session id
-        def handle_login_response response
-            if !Net::HTTPOK === response.response
-                raise RuntimeError, "Failed to login: '#{response}'"
-            end
-
-            parsed_response = response.parsed_response
-            if !Hash === parsed_response
-                raise RuntimeError, "Failed to login, cannot parse the response: '#{response}'"
-            end
-
-            if Hash === parsed_response["ok"] && (session_id = parsed_response["ok"]["sessionid"])
-                session_id
-            elsif Hash === parsed_response["response"] && Hash === parsed_response["response"]["error"]
-                if iterations = parsed_response["response"]["error"]["iterations"]
-                    @iterations = iterations.to_i
-                    login
-                elsif message = parsed_response["response"]["error"]["message"]
-                    raise RuntimeError, "Failed to login, LastPass says '#{message}'"
-                elsif
-                    raise RuntimeError, "Failed to login, LastPass responded with an unknown error"
-                end
-            else
-                raise RuntimeError, "Failed to login, the reason is unknown"
-            end
-        end
     end
 end
