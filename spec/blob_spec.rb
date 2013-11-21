@@ -12,7 +12,9 @@ describe LastPass::Blob do
         it "returns bytes" do
             expect(blob.bytes).to eq bytes
         end
+    end
 
+    describe "#key_iteration_count" do
         it "returns key iteration count" do
             expect(blob.key_iteration_count).to eq key_iteration_count
         end
