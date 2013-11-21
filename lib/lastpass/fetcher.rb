@@ -4,8 +4,9 @@
 require "pbkdf2"
 require "httparty"
 
-require_relative "session"
 require_relative "exceptions"
+require_relative "session"
+require_relative "blob"
 
 module LastPass
     class Fetcher
