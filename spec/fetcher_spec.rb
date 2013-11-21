@@ -70,13 +70,7 @@ describe LastPass::Fetcher do
         end
 
         it "returns a session" do
-            expect(
-                request_login_with_xml "<ok sessionid='#{@session_id}' />"
-            ).to satisfy { |s|
-                s.is_a?(LastPass::Session) &&
-                s.id == @session_id &&
-                s.key_iteration_count == @key_iteration_count
-            }
+            expect(request_login_with_xml "<ok sessionid='#{@session_id}' />").to eq @session
         end
 
         it "raises an exception on HTTP error" do

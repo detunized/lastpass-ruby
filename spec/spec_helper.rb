@@ -9,3 +9,11 @@ class String
         Base64.decode64 self
     end
 end
+
+module LastPass
+    class Session
+        def == other
+            id == other.id && key_iteration_count == other.key_iteration_count
+        end
+    end
+end
