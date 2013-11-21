@@ -12,7 +12,8 @@ describe LastPass::Fetcher do
         @session_id = "53ru,Hb713QnEVM5zWZ16jMvxS0"
         @session = LastPass::Session.new @session_id, @key_iteration_count
 
-        @blob = "TFBBVgAAAAMxMjJQUkVNAAAACjE0MTQ5"
+        @blob_bytes = "TFBBVgAAAAMxMjJQUkVNAAAACjE0MTQ5"
+        @blob = LastPass::Blob.new @blob_bytes, @key_iteration_count
     end
 
     describe ".request_iteration_count" do
@@ -125,19 +126,14 @@ describe LastPass::Fetcher do
                 .with("https://lastpass.com/getaccts.php?mobile=1&b64=1&hash=0.0",
                       format: :plain,
                       cookies: {"PHPSESSID" => @session_id})
-                .and_return(http_ok(@blob))
+                .and_return(http_ok(@blob_bytes))
 
             LastPass::Fetcher.fetch @session, web_client
         end
 
         it "returns a blob" do
-            expect(
-                LastPass::Fetcher.fetch @session, double("web_client", get: http_ok(@blob))
-            ).to satisfy { |b|
-                b.is_a?(LastPass::Blob) &&
-                b.bytes == @blob &&
-                b.key_iteration_count == @key_iteration_count
-            }
+            expect(LastPass::Fetcher.fetch @session, double("web_client", get: http_ok(@blob_bytes)))
+                .to eq @blob
         end
 
         it "raises an exception on HTTP error" do

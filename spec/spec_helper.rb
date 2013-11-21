@@ -16,4 +16,10 @@ module LastPass
             id == other.id && key_iteration_count == other.key_iteration_count
         end
     end
+
+    class Blob
+        def == other
+            bytes == other.bytes && key_iteration_count == other.key_iteration_count
+        end
+    end
 end
