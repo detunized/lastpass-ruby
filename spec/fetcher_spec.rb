@@ -134,7 +134,11 @@ describe LastPass::Fetcher do
         it "returns a blob" do
             expect(
                 LastPass::Fetcher.fetch @session, double("web_client", get: http_ok(@blob))
-            ).to eq @blob
+            ).to satisfy { |b|
+                b.is_a?(LastPass::Blob) &&
+                b.bytes == @blob &&
+                b.key_iteration_count == @key_iteration_count
+            }
         end
 
         it "raises an exception on HTTP error" do

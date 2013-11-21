@@ -21,7 +21,8 @@ module LastPass
                                       cookies: {"PHPSESSID" => URI.encode(session.id)}
 
             raise NetworkError unless response.response.is_a? Net::HTTPOK
-            response.parsed_response
+
+            Blob.new response.parsed_response, session.key_iteration_count
         end
 
         def self.request_iteration_count username, web_client = HTTParty
