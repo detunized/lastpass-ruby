@@ -4,36 +4,34 @@
 require "spec_helper"
 
 describe LastPass::Parser do
-    before :all do
-        @blob = File.read 'lastpass-blob'
-        @key = "OfOUvVnQzB4v49sNh4+PdwIFb9Fr5+jVfWRTf+E2Ghg=".decode64
-        @parser = LastPass::Parser.parse @blob, @key
-    end
+    let(:blob) { File.read "lastpass-blob" }
+    let(:key) { "OfOUvVnQzB4v49sNh4+PdwIFb9Fr5+jVfWRTf+E2Ghg=".decode64 }
+    let(:parser) { LastPass::Parser.parse blob, key }
 
     describe "parse" do
         it "returns Parser" do
-            expect(@parser).to be_instance_of LastPass::Parser
+            expect(parser).to be_instance_of LastPass::Parser
         end
 
         it "raises an exception for nil blob" do
-            expect { LastPass::Parser.parse nil, @key }.to raise_error ArgumentError
+            expect { LastPass::Parser.parse nil, key }.to raise_error ArgumentError
         end
 
         it "raises an exception for empty blob" do
-            expect { LastPass::Parser.parse "", @key }.to raise_error ArgumentError
+            expect { LastPass::Parser.parse "", key }.to raise_error ArgumentError
         end
 
         it "raises an exception for invalid blob" do
-            expect { LastPass::Parser.parse "ABCD", @key }.to raise_error ArgumentError
+            expect { LastPass::Parser.parse "ABCD", key }.to raise_error ArgumentError
         end
     end
 
     it "returns chunks as a hash" do
-        expect(@parser.chunks).to be_instance_of Hash
+        expect(parser.chunks).to be_instance_of Hash
     end
 
     it "contains chunks with correct structure" do
-        @parser.chunks.each do |id, chunks|
+        parser.chunks.each do |id, chunks|
             expect(id).to be_instance_of String
             expect(id).to match /^[A-Z]{4}$/
 
@@ -61,9 +59,9 @@ describe LastPass::Parser do
     private
 
     def check_single_chunk id, value
-        @parser.chunks.keys.should include id
+        parser.chunks.keys.should include id
 
-        chunks = @parser.chunks[id]
+        chunks = parser.chunks[id]
         chunks.size.should == 1
         chunks.first.should == value
     end
