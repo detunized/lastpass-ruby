@@ -59,10 +59,10 @@ describe LastPass::Parser do
     private
 
     def check_single_chunk id, value
-        parser.chunks.keys.should include id
+        expect(parser.chunks.keys).to include id
 
         chunks = parser.chunks[id]
-        chunks.size.should == 1
-        chunks.first.should == value
+        expect(chunks.size).to eq 1
+        expect(chunks.first).to eq value
     end
 end
