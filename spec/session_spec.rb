@@ -4,17 +4,15 @@
 require "spec_helper"
 
 describe LastPass::Session do
-    before :all do
-        @id = "53ru,Hb713QnEVM5zWZ16jMvxS0"
-        @key_iteration_count = 5000
-        @session = LastPass::Session.new @id, @key_iteration_count
-    end
+    let(:id) { "53ru,Hb713QnEVM5zWZ16jMvxS0" }
+    let(:key_iteration_count) { 5000 }
+    let(:session) { LastPass::Session.new id, key_iteration_count }
 
     it "#id returns the correct value" do
-        @session.id.should == @id
+        expect(session.id).to eq id
     end
 
     it "#key_iteration_count returns the correct value" do
-        @session.key_iteration_count.should == @key_iteration_count
+        expect(session.key_iteration_count).to eq key_iteration_count
     end
 end
