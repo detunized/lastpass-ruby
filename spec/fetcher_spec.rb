@@ -4,58 +4,54 @@
 require "spec_helper"
 
 describe LastPass::Fetcher do
-    before :all do
-        @username = "username"
-        @password = "password"
-        @key_iteration_count = 5000
-
-        @session_id = "53ru,Hb713QnEVM5zWZ16jMvxS0"
-        @session = LastPass::Session.new @session_id, @key_iteration_count
-
-        @blob_bytes = "TFBBVgAAAAMxMjJQUkVNAAAACjE0MTQ5"
-        @blob = LastPass::Blob.new @blob_bytes, @key_iteration_count
-    end
+    let(:username) { "username" }
+    let(:password) { "password" }
+    let(:key_iteration_count) { 5000 }
+    let(:session_id) { "53ru,Hb713QnEVM5zWZ16jMvxS0" }
+    let(:session) { LastPass::Session.new session_id, key_iteration_count }
+    let(:blob_bytes) { "TFBBVgAAAAMxMjJQUkVNAAAACjE0MTQ5" }
+    let(:blob) { LastPass::Blob.new blob_bytes, key_iteration_count }
 
     describe ".request_iteration_count" do
         it "makes a POST request" do
             expect(web_client = double("web_client")).to receive(:post)
-                .with("https://lastpass.com/iterations.php", query: {email: @username})
-                .and_return(http_ok(@key_iteration_count.to_s))
+                .with("https://lastpass.com/iterations.php", query: {email: username})
+                .and_return(http_ok(key_iteration_count.to_s))
 
-            LastPass::Fetcher.request_iteration_count @username, web_client
+            LastPass::Fetcher.request_iteration_count username, web_client
         end
 
         it "returns key iteration count" do
             expect(
-                LastPass::Fetcher.request_iteration_count @username,
-                                                          double("web_client", post: http_ok(@key_iteration_count.to_s))
-            ).to eq @key_iteration_count
+                LastPass::Fetcher.request_iteration_count username,
+                                                          double("web_client", post: http_ok(key_iteration_count.to_s))
+            ).to eq key_iteration_count
         end
 
         it "raises an exception on HTTP error" do
             expect {
-                LastPass::Fetcher.request_iteration_count @username,
+                LastPass::Fetcher.request_iteration_count username,
                                                           double("web_client", post: http_error)
             }.to raise_error LastPass::NetworkError
         end
 
         it "raises an exception on invalid key iteration count" do
             expect {
-                LastPass::Fetcher.request_iteration_count @username,
+                LastPass::Fetcher.request_iteration_count username,
                                                           double("web_client", post: http_ok("not a number"))
             }.to raise_error LastPass::InvalidResponse, "Key iteration count is invalid"
         end
 
         it "raises an exception on zero key iteration count" do
             expect {
-                LastPass::Fetcher.request_iteration_count @username,
+                LastPass::Fetcher.request_iteration_count username,
                                                           double("web_client", post: http_ok("0"))
             }.to raise_error LastPass::InvalidResponse, "Key iteration count is not positive"
         end
 
         it "raises an exception on negative key iteration count" do
             expect {
-                LastPass::Fetcher.request_iteration_count @username,
+                LastPass::Fetcher.request_iteration_count username,
                                                           double("web_client", post: http_ok("-1"))
             }.to raise_error LastPass::InvalidResponse, "Key iteration count is not positive"
         end
@@ -65,13 +61,13 @@ describe LastPass::Fetcher do
         it "makes a POST request" do
             expect(web_client = double("web_client")).to receive(:post)
                 .with("https://lastpass.com/login.php", format: :xml, body: anything)
-                .and_return(http_ok("ok" => {"sessionid" => @session_id}))
+                .and_return(http_ok("ok" => {"sessionid" => session_id}))
 
-            LastPass::Fetcher.request_login @username, @password, @key_iteration_count, web_client
+            LastPass::Fetcher.request_login username, password, key_iteration_count, web_client
         end
 
         it "returns a session" do
-            expect(request_login_with_xml "<ok sessionid='#{@session_id}' />").to eq @session
+            expect(request_login_with_xml "<ok sessionid='#{session_id}' />").to eq session
         end
 
         it "raises an exception on HTTP error" do
@@ -125,20 +121,20 @@ describe LastPass::Fetcher do
             expect(web_client = double("web_client")).to receive(:get)
                 .with("https://lastpass.com/getaccts.php?mobile=1&b64=1&hash=0.0",
                       format: :plain,
-                      cookies: {"PHPSESSID" => @session_id})
-                .and_return(http_ok(@blob_bytes))
+                      cookies: {"PHPSESSID" => session_id})
+                .and_return(http_ok(blob_bytes))
 
-            LastPass::Fetcher.fetch @session, web_client
+            LastPass::Fetcher.fetch session, web_client
         end
 
         it "returns a blob" do
-            expect(LastPass::Fetcher.fetch @session, double("web_client", get: http_ok(@blob_bytes)))
-                .to eq @blob
+            expect(LastPass::Fetcher.fetch session, double("web_client", get: http_ok(blob_bytes)))
+                .to eq blob
         end
 
         it "raises an exception on HTTP error" do
             expect {
-                LastPass::Fetcher.fetch @session, double("web_client", get: http_error)
+                LastPass::Fetcher.fetch session, double("web_client", get: http_error)
             }   .to raise_error LastPass::NetworkError
         end
     end
@@ -222,9 +218,9 @@ describe LastPass::Fetcher do
     end
 
     def request_login_with_response response
-        LastPass::Fetcher.request_login @username,
-                                        @password,
-                                        @key_iteration_count,
+        LastPass::Fetcher.request_login username,
+                                        password,
+                                        key_iteration_count,
                                         double("web_client", post: response)
     end
 end
