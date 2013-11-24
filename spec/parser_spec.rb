@@ -25,6 +25,12 @@ describe LastPass::Parser do
             it "all arrays contain only chunks" do
                 expect(chunks.values.flat_map { |i| i.map &:class }.uniq).to eq [LastPass::Chunk]
             end
+
+            it "all chunks grouped under correct IDs" do
+                expect(
+                    chunks.all? { |id, chunk_group| chunk_group.map(&:id).uniq == [id] }
+                ).to be_true
+            end
         end
     end
 end
