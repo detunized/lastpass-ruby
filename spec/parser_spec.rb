@@ -108,6 +108,24 @@ describe LastPass::Parser do
         end
     end
 
+    describe ".read_uint32" do
+        let(:number) { 0x12345678 }
+        let(:buffer) { "12345678" + padding }
+
+        it "returns a number" do
+            with_hex buffer do |io|
+                expect(LastPass::Parser.read_size io).to eq number
+            end
+        end
+
+        it "reads correct number of bytes" do
+            with_hex buffer do |io|
+                LastPass::Parser.read_uint32 io
+                expect(io.pos).to eq 4
+            end
+        end
+    end
+
     #
     # Helpers
     #
