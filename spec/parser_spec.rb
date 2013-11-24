@@ -51,6 +51,24 @@ describe LastPass::Parser do
         end
     end
 
+    describe ".read_id" do
+        let(:id) { "IDID"}
+        let(:bytes) { id }
+
+        it "returns an id" do
+            with_bytes bytes do |io|
+                expect(LastPass::Parser.read_id io).to eq id
+            end
+        end
+
+        it "reads correct number of bytes" do
+            with_bytes bytes do |io|
+                LastPass::Parser.read_id io
+                expect(io.pos).to eq 4
+            end
+        end
+    end
+
     #
     # Helpers
     #
@@ -58,8 +76,20 @@ describe LastPass::Parser do
     private
 
     def with_blob &block
-        StringIO.open TEST_BLOB do |io|
+        with_bytes TEST_BLOB, &block
+    end
+
+    def with_hex hex, &block
+        with_bytes decode_hex(hex), &block
+    end
+
+    def with_bytes bytes, &block
+        StringIO.open bytes do |io|
             yield io
         end
+    end
+
+    def decode_hex hex
+        hex.scan(/../).map { |i| i.to_i 16 }.pack "c*"
     end
 end
