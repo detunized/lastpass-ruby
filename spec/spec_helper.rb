@@ -22,4 +22,10 @@ module LastPass
             bytes == other.bytes && key_iteration_count == other.key_iteration_count
         end
     end
+
+    class Chunk
+        def == other
+            id == other.id && payload == other.payload
+        end
+    end
 end

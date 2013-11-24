@@ -33,4 +33,33 @@ describe LastPass::Parser do
             end
         end
     end
+
+    describe ".read_chunk" do
+        let(:lpav) { LastPass::Chunk.new "LPAV", "118" }
+
+        it "returns a chunk" do
+            with_blob do |io|
+                expect(LastPass::Parser.read_chunk io).to eq lpav
+            end
+        end
+
+        it "reads correct number of bytes" do
+            with_blob do |io|
+                LastPass::Parser.read_chunk io
+                expect(io.pos).to eq 11
+            end
+        end
+    end
+
+    #
+    # Helpers
+    #
+
+    private
+
+    def with_blob &block
+        StringIO.open TEST_BLOB do |io|
+            yield io
+        end
+    end
 end
