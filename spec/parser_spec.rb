@@ -4,65 +4,31 @@
 require "spec_helper"
 
 describe LastPass::Parser do
-    let(:blob) { File.read "lastpass-blob" }
-    let(:key) { "OfOUvVnQzB4v49sNh4+PdwIFb9Fr5+jVfWRTf+E2Ghg=".decode64 }
-    let(:parser) { LastPass::Parser.parse blob, key }
+    let(:blob_bytes) { File.read("lastpass-blob").decode64 }
+    let(:key_iteration_count) { 5000 }
+    let(:blob) { LastPass::Blob.new blob_bytes, key_iteration_count }
 
-    describe "parse" do
-        it "returns Parser" do
-            expect(parser).to be_instance_of LastPass::Parser
+    describe ".extract_chunks" do
+        context "returned chunks" do
+            let(:chunks) { LastPass::Parser.extract_chunks blob }
+
+            it { expect(chunks).to be_instance_of Hash }
+
+            it "has correct size" do
+                expect(chunks.size).to eq 21
+            end
+
+            it "all keys are strings" do
+                expect(chunks.keys.map(&:class).uniq).to eq [String]
+            end
+
+            it "all values are arrays" do
+                expect(chunks.values.map(&:class).uniq).to eq [Array]
+            end
+
+            it "all arrays contain only chunks" do
+                expect(chunks.values.flat_map { |i| i.map &:class }.uniq).to eq [LastPass::Chunk]
+            end
         end
-
-        it "raises an exception for nil blob" do
-            expect { LastPass::Parser.parse nil, key }.to raise_error ArgumentError
-        end
-
-        it "raises an exception for empty blob" do
-            expect { LastPass::Parser.parse "", key }.to raise_error ArgumentError
-        end
-
-        it "raises an exception for invalid blob" do
-            expect { LastPass::Parser.parse "ABCD", key }.to raise_error ArgumentError
-        end
-    end
-
-    it "returns chunks as a hash" do
-        expect(parser.chunks).to be_instance_of Hash
-    end
-
-    it "contains chunks with correct structure" do
-        parser.chunks.each do |id, chunks|
-            expect(id).to be_instance_of String
-            expect(id).to match /^[A-Z]{4}$/
-
-            expect(chunks).to be_instance_of Array
-            expect(chunks.size).to be > 0
-        end
-    end
-
-    it "contains LPAV chunk" do
-        check_single_chunk "LPAV", "9"
-    end
-
-    it "contains ENCU chunk" do
-        check_single_chunk "ENCU", "postlass@gmail.com"
-    end
-
-    it "contains NMAC chunk" do
-        check_single_chunk "NMAC", "8"
-    end
-
-    #
-    # Helpers
-    #
-
-    private
-
-    def check_single_chunk id, value
-        expect(parser.chunks.keys).to include id
-
-        chunks = parser.chunks[id]
-        expect(chunks.size).to eq 1
-        expect(chunks.first).to eq value
     end
 end

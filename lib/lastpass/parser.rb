@@ -9,6 +9,47 @@ require_relative "chunk"
 
 module LastPass
     class Parser
+        def self.extract_chunks blob
+            chunks = Hash.new { |hash, key| hash[key] = [] }
+
+            StringIO.open blob.bytes do |stream|
+                while !stream.eof?
+                    chunk = read_chunk stream
+                    chunks[chunk.id] << chunk
+                end
+            end
+
+            chunks
+        end
+
+        def self.read_chunk stream
+            # LastPass blob chunk is made up of 4-byte ID,
+            # big endian 4-byte size and payload of that size
+            # Example:
+            #   0000: 'IDID'
+            #   0004: 4
+            #   0008: 0xDE 0xAD 0xBE 0xEF
+            #   000C: --- Next chunk ---
+
+            Chunk.new read_id(stream), read_payload(stream, read_size(stream))
+        end
+
+        def self.read_id stream
+            stream.read 4
+        end
+
+        def self.read_size stream
+            read_uint32 stream
+        end
+
+        def self.read_payload stream, size
+            stream.read size
+        end
+
+        def self.read_uint32 stream
+            stream.read(4).unpack('N').first
+        end
+
         class << self
             def parse blob, encryption_key
                 parser = Parser.new blob, encryption_key
