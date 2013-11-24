@@ -7,6 +7,7 @@ require_relative "test_data"
 describe LastPass::Parser do
     let(:key_iteration_count) { 5000 }
     let(:blob) { LastPass::Blob.new TEST_BLOB, key_iteration_count }
+    let(:padding) { "BEEFFACE"}
 
     describe ".extract_chunks" do
         context "returned chunks" do
@@ -35,36 +36,74 @@ describe LastPass::Parser do
     end
 
     describe ".read_chunk" do
-        let(:lpav) { LastPass::Chunk.new "LPAV", "118" }
+        let(:buffer) { "4944494400000004DEADBEEF" + padding }
+        let(:chunk) { LastPass::Chunk.new "IDID", "DEADBEEF".decode_hex }
 
         it "returns a chunk" do
-            with_blob do |io|
-                expect(LastPass::Parser.read_chunk io).to eq lpav
+            with_hex buffer do |io|
+                expect(LastPass::Parser.read_chunk io).to eq chunk
             end
         end
 
         it "reads correct number of bytes" do
-            with_blob do |io|
+            with_hex buffer do |io|
                 LastPass::Parser.read_chunk io
-                expect(io.pos).to eq 11
+                expect(io.pos).to eq 12
             end
         end
     end
 
     describe ".read_id" do
-        let(:id) { "IDID"}
-        let(:bytes) { id }
+        let(:id) { "IDID" }
+        let(:buffer) { id + padding }
 
         it "returns an id" do
-            with_bytes bytes do |io|
+            with_bytes buffer do |io|
                 expect(LastPass::Parser.read_id io).to eq id
             end
         end
 
         it "reads correct number of bytes" do
-            with_bytes bytes do |io|
+            with_bytes buffer do |io|
                 LastPass::Parser.read_id io
                 expect(io.pos).to eq 4
+            end
+        end
+    end
+
+    describe ".read_size" do
+        let(:size) { 4 }
+        let(:buffer) { "00000004" + padding }
+
+        it "returns a size" do
+            with_hex buffer do |io|
+                expect(LastPass::Parser.read_size io).to eq size
+            end
+        end
+
+        it "reads correct number of bytes" do
+            with_hex buffer do |io|
+                LastPass::Parser.read_size io
+                expect(io.pos).to eq 4
+            end
+        end
+    end
+
+    describe ".read_payload" do
+        let(:size) { 4 }
+        let(:payload) { "DEADBEEF".decode_hex }
+        let(:buffer) { "DEADBEEF" + padding }
+
+        it "returns a payload" do
+            with_hex buffer do |io|
+                expect(LastPass::Parser.read_payload io, size).to eq payload
+            end
+        end
+
+        it "reads correct number of bytes" do
+            with_hex buffer do |io|
+                LastPass::Parser.read_payload io, size
+                expect(io.pos).to eq size
             end
         end
     end
@@ -80,16 +119,12 @@ describe LastPass::Parser do
     end
 
     def with_hex hex, &block
-        with_bytes decode_hex(hex), &block
+        with_bytes hex.decode_hex, &block
     end
 
     def with_bytes bytes, &block
         StringIO.open bytes do |io|
             yield io
         end
-    end
-
-    def decode_hex hex
-        hex.scan(/../).map { |i| i.to_i 16 }.pack "c*"
     end
 end

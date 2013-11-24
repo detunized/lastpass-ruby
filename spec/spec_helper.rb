@@ -8,6 +8,10 @@ class String
     def decode64
         Base64.decode64 self
     end
+
+    def decode_hex
+        scan(/../).map { |i| i.to_i 16 }.pack "c*"
+    end
 end
 
 module LastPass
