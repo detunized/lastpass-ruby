@@ -2,11 +2,11 @@
 # Licensed under the terms of the MIT license. See LICENCE for details.
 
 require "spec_helper"
+require_relative "test_data"
 
 describe LastPass::Parser do
-    let(:blob_bytes) { File.read("lastpass-blob").decode64 }
     let(:key_iteration_count) { 5000 }
-    let(:blob) { LastPass::Blob.new blob_bytes, key_iteration_count }
+    let(:blob) { LastPass::Blob.new TEST_BLOB, key_iteration_count }
 
     describe ".extract_chunks" do
         context "returned chunks" do
@@ -14,12 +14,8 @@ describe LastPass::Parser do
 
             it { expect(chunks).to be_instance_of Hash }
 
-            it "has correct size" do
-                expect(chunks.size).to eq 21
-            end
-
             it "all keys are strings" do
-                expect(chunks.keys.map(&:class).uniq).to eq [String]
+                expect(chunks.keys).to match_array TEST_CHUNK_IDS
             end
 
             it "all values are arrays" do
