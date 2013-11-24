@@ -22,7 +22,7 @@ module LastPass
 
             raise NetworkError unless response.response.is_a? Net::HTTPOK
 
-            Blob.new response.parsed_response, session.key_iteration_count
+            Blob.new decode_blob(response.parsed_response), session.key_iteration_count
         end
 
         def self.request_iteration_count username, web_client = HTTParty
@@ -92,6 +92,11 @@ module LastPass
             else
                 InvalidResponse.new message
             end
+        end
+
+        def self.decode_blob blob
+            # TODO: Check for invalid base64
+            Base64.decode64 blob
         end
 
         def self.make_key username, password, key_iteration_count

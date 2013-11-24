@@ -9,7 +9,8 @@ describe LastPass::Fetcher do
     let(:key_iteration_count) { 5000 }
     let(:session_id) { "53ru,Hb713QnEVM5zWZ16jMvxS0" }
     let(:session) { LastPass::Session.new session_id, key_iteration_count }
-    let(:blob_bytes) { "TFBBVgAAAAMxMjJQUkVNAAAACjE0MTQ5" }
+    let(:blob_response) { "TFBBVgAAAAMxMjJQUkVNAAAACjE0MTQ5" }
+    let(:blob_bytes) { blob_response.decode64 }
     let(:blob) { LastPass::Blob.new blob_bytes, key_iteration_count }
 
     describe ".request_iteration_count" do
@@ -122,13 +123,13 @@ describe LastPass::Fetcher do
                 .with("https://lastpass.com/getaccts.php?mobile=1&b64=1&hash=0.0",
                       format: :plain,
                       cookies: {"PHPSESSID" => session_id})
-                .and_return(http_ok(blob_bytes))
+                .and_return(http_ok(blob_response))
 
             LastPass::Fetcher.fetch session, web_client
         end
 
         it "returns a blob" do
-            expect(LastPass::Fetcher.fetch session, double("web_client", get: http_ok(blob_bytes)))
+            expect(LastPass::Fetcher.fetch session, double("web_client", get: http_ok(blob_response)))
                 .to eq blob
         end
 
