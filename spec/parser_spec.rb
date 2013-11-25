@@ -35,6 +35,18 @@ describe LastPass::Parser do
         end
     end
 
+    describe ".parse_account" do
+        let(:accounts) {
+            LastPass::Parser
+                .extract_chunks(blob)["ACCT"]
+                .map { |i| LastPass::Parser.parse_account i }
+        }
+
+        it "parses accounts" do
+            expect(accounts.map &:id).to eq TEST_ACCOUNTS.map &:id
+        end
+    end
+
     describe ".read_chunk" do
         it "returns a chunk" do
             with_hex "4142434400000004DEADBEEF" + padding do |io|

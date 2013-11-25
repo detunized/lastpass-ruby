@@ -22,6 +22,22 @@ module LastPass
             chunks
         end
 
+        def self.parse_account chunk
+            StringIO.open chunk.payload do |io|
+                id = read_item io
+                name = read_item io
+                group = read_item io
+                url = decode_hex read_item io
+                skip_item io
+                skip_item io
+                skip_item io
+                username = read_item io
+                password = read_item io
+
+                Account.new id, name, username, password, url, group
+            end
+        end
+
         def self.read_chunk stream
             # LastPass blob chunk is made up of 4-byte ID,
             # big endian 4-byte size and payload of that size.
@@ -65,6 +81,11 @@ module LastPass
 
         def self.read_uint32 stream
             stream.read(4).unpack('N').first
+        end
+
+        def self.decode_hex data
+            # TODO: Check for input validity
+            data.scan(/../).map { |i| i.to_i 16 }.pack "c*"
         end
 
         #
@@ -122,11 +143,6 @@ module LastPass
         def decode_base64 data
             # TODO: Check for input validity
             Base64.decode64 data
-        end
-
-        def decode_hex data
-            # TODO: Check for input validity
-            data.scan(/../).map { |i| i.to_i 16 }.pack "c*"
         end
 
         # Guesses AES encoding/cipher from the length of the data.
