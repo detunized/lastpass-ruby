@@ -24,7 +24,8 @@ module LastPass
 
         def self.read_chunk stream
             # LastPass blob chunk is made up of 4-byte ID,
-            # big endian 4-byte size and payload of that size
+            # big endian 4-byte size and payload of that size.
+            #
             # Example:
             #   0000: 'IDID'
             #   0004: 4
@@ -32,6 +33,22 @@ module LastPass
             #   000C: --- Next chunk ---
 
             Chunk.new read_id(stream), read_payload(stream, read_size(stream))
+        end
+
+        def self.read_item stream
+            # An item in an itemized chunk is made up of the
+            # big endian size and the payload of that size.
+            #
+            # Example:
+            #   0000: 4
+            #   0004: 0xDE 0xAD 0xBE 0xEF
+            #   0008: --- Next item ---
+
+            read_payload stream, read_size(stream)
+        end
+
+        def self.skip_item stream
+            read_item stream
         end
 
         def self.read_id stream

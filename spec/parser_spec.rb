@@ -44,6 +44,31 @@ describe LastPass::Parser do
         end
     end
 
+    describe ".read_item" do
+        it "returns an item" do
+            with_hex "00000004DEADBEEF" + padding do |io|
+                expect(LastPass::Parser.read_item io).to eq "DEADBEEF".decode_hex
+                expect(io.pos).to eq 8
+            end
+        end
+    end
+
+    describe ".skip_item" do
+        it "skips an empty item" do
+            with_hex "00000000" + padding do |io|
+                LastPass::Parser.skip_item io
+                expect(io.pos).to eq 4
+            end
+        end
+
+        it "skips a non-empty item" do
+            with_hex "00000004DEADBEEF" + padding do |io|
+                LastPass::Parser.skip_item io
+                expect(io.pos).to eq 8
+            end
+        end
+    end
+
     describe ".read_id" do
         it "returns an id" do
             with_bytes "ABCD" + padding do |io|
