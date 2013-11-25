@@ -117,6 +117,35 @@ describe LastPass::Parser do
         end
     end
 
+    describe ".decode_hex" do
+        it "decodes hex" do
+            expect(LastPass::Parser.decode_hex "")
+                .to eq ""
+
+            expect(LastPass::Parser.decode_hex "00ff")
+                .to eq "\x00\xFF"
+
+            expect(LastPass::Parser.decode_hex "00010203040506070809")
+                .to eq "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09"
+
+            expect(LastPass::Parser.decode_hex "000102030405060708090a0b0c0d0e0f")
+                .to eq "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F"
+
+            expect(LastPass::Parser.decode_hex "8af633933e96a3c3550c2734bd814195")
+                .to eq "\x8A\xF6\x33\x93\x3E\x96\xA3\xC3\x55\x0C\x27\x34\xBD\x81\x41\x95"
+        end
+
+        it "raises exception on odd length" do
+            expect { LastPass::Parser.decode_hex "0" }
+                .to raise_error ArgumentError, "Input length must be multple of 2"
+        end
+
+        it "raises exception on invalid characters" do
+            expect { LastPass::Parser.decode_hex "xz" }
+                .to raise_error ArgumentError, "Input contains invalid characters"
+        end
+    end
+
     #
     # Helpers
     #

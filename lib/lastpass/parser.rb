@@ -84,7 +84,9 @@ module LastPass
         end
 
         def self.decode_hex data
-            # TODO: Check for input validity
+            raise ArgumentError, "Input length must be multple of 2" unless data.size % 2 == 0
+            raise ArgumentError, "Input contains invalid characters" unless data =~ /^[0-9a-f]*$/i
+
             data.scan(/../).map { |i| i.to_i 16 }.pack "c*"
         end
 
