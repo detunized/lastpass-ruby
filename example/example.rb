@@ -8,3 +8,4 @@ credentials = YAML.load_file File.join File.dirname(__FILE__), "credentials.yaml
 
 session = LastPass::Fetcher.login credentials["username"], credentials["password"]
 blob = LastPass::Fetcher.fetch session
+vault = LastPass::Vault.new blob
