@@ -175,6 +175,7 @@ describe LastPass::Fetcher do
     #
     # Helpers
     #
+
     private
 
     def mock_response type, code, body
