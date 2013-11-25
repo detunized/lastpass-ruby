@@ -28,9 +28,7 @@ module LastPass
                 name = read_item io
                 group = read_item io
                 url = decode_hex read_item io
-                skip_item io
-                skip_item io
-                skip_item io
+                3.times { skip_item io }
                 username = read_item io
                 password = read_item io
 
