@@ -6,8 +6,11 @@ require "lastpass/parser"
 
 module LastPass
     class Vault
+        attr_reader :accounts
+
         def initialize blob
-            Parser.extract_chunks blob
+            chunks = Parser.extract_chunks blob
+            @accounts = (chunks["ACCT"] || []).map { |i| Parser.parse_account i }
         end
     end
 end

@@ -889,6 +889,7 @@ TEST_BLOB = ("TFBBVgAAAAMxMThBVFZSAAAAAzEwMkVOQ1UAAABGITExVkVjWFVnelFramxranB2" 
              "MFVSVUwAAAAoAAAAGjY4NjU3MjZmNmI3NTYxNzA3MDJlNjM2ZjZkAAAAATEAAAAB" +
              "MFVSVUwAAAAaAAAADDZlNmY3NjJlNzI3NQAAAAExAAAAATBFTkRNAAAAAk9L").decode64
 
+TEST_KEY_ITERATION_COUNT = 5000
 
 TEST_ACCOUNTS = [
     LastPass::Account.new("1872745596", "Muller, Morar and Wisoky", "branson_cormier", "8jgLCzQSkB2rTZ1OtF9sNGpc", "http://nienow.net/meagan.greenholt", "three"),
