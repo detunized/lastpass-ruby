@@ -246,21 +246,6 @@ module LastPass
         # Chunk parsers
         #
 
-        # 'LPAV' chunk seems to be storing some kind of version information
-        def parse_chunk_LPAV stream
-            stream.read
-        end
-
-        # 'ENCU' chunk contains encrypted user name
-        def parse_chunk_ENCU stream
-            decode_aes256 stream.read
-        end
-
-        # 'NMAC' chunk contains number of accounts
-        def parse_chunk_NMAC stream
-            stream.read
-        end
-
         # 'ACCT' chunk contains account information
         def parse_chunk_ACCT stream
             parse_itemized_chunk stream, [
@@ -294,14 +279,6 @@ module LastPass
                 {:name => :attach_present},
                 {:name => :individual_share},
                 {:name => :unknown1}
-            ]
-        end
-
-        # 'EQDN' chunk contains information about equivalent domains
-        def parse_chunk_EQDN stream
-            parse_itemized_chunk stream, [
-                {:name => :id},
-                {:name => :domain, :encoding => :hex}
             ]
         end
     end
