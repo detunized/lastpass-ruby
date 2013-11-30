@@ -78,7 +78,7 @@ module LastPass
         end
 
         def self.read_uint32 stream
-            stream.read(4).unpack('N').first
+            stream.read(4).unpack("N").first
         end
 
         def self.decode_hex data
@@ -88,105 +88,53 @@ module LastPass
             data.scan(/../).map { |i| i.to_i 16 }.pack "c*"
         end
 
-        #
-        # To be killed
-        #
-
-        def parse_chunks raw_chunks
-            parsed_chunks = {}
-
-            raw_chunks.each do |id, chunks|
-                parse_method = "parse_chunk_#{id}"
-                if respond_to? parse_method, true
-                    parsed_chunks[id] = chunks.map do |chunk|
-                        StringIO.open chunk do |stream|
-                            send parse_method, stream
-                        end
-                    end
-                end
-            end
-
-            parsed_chunks
-        end
-
-        def read_item stream
-            # An item in an itemized chunk is made up of a size and the payload
-            # Example:
-            #   0000: 4
-            #   0004: 0xDE 0xAD 0xBE 0xEF
-            #   0008: --- Next item ---
-            size = read_uint32 stream
-            payload = stream.read size
-
-            {:size => size, :payload => payload}
-        end
-
-        def read_uint32 stream
-            stream.read(4).unpack('N').first
-        end
-
-        #
-        # Decoders
-        #
-
-        # Allowed encodings:
-        #  - nil or :plain
-        #  - :base64
-        def decode data, encoding = nil
-            if encoding.nil? || encoding == :plain
-                data
-            else
-                send "decode_#{encoding}", data
-            end
-        end
-
-        def decode_base64 data
+        def self.decode_base64 data
             # TODO: Check for input validity
             Base64.decode64 data
         end
 
         # Guesses AES encoding/cipher from the length of the data.
-        def decode_aes256 data
+        def self.decode_aes256_auto data, encryption_key
             length = data.length
             length16 = length % 16
             length64 = length % 64
 
             if length == 0
-                ''
+                ""
             elsif length16 == 0
-                decode_aes256_ecb_plain data
+                decode_aes256_ecb_plain data, encryption_key
             elsif length64 == 0 || length64 == 24 || length64 == 44
-                decode_aes256_ecb_base64 data
+                decode_aes256_ecb_base64 data, encryption_key
             elsif length16 == 1
-                decode_aes256_cbc_plain data
+                decode_aes256_cbc_plain data, encryption_key
             elsif length64 == 6 || length64 == 26 || length64 == 50
-                decode_aes256_cbc_base64 data
+                decode_aes256_cbc_base64 data, encryption_key
             else
                 raise RuntimeError, "'#{data.inspect}' doesn't seem to be AES-256 encrypted"
             end
         end
 
-        def decode_aes256_ecb_plain data
+        def self.decode_aes256_ecb_plain data, encryption_key
             if data.empty?
-                ''
+                ""
             else
-                _decode_aes256 :ecb, '', data
+                decode_aes256 :ecb, "", data, encryption_key
             end
         end
 
-        def decode_aes256_ecb_base64 data
-            decode_aes256_ecb_plain decode_base64 data
+        def self.decode_aes256_ecb_base64 data, encryption_key
+            decode_aes256_ecb_plain decode_base64(data), encryption_key
         end
 
         # LastPass AES-256/CBC encryted string starts with '!'.
         # Next 16 bytes are the IV for the cipher.
         # And the rest is the encrypted payload.
-        def decode_aes256_cbc_plain data
+        def self.decode_aes256_cbc_plain data, encryption_key
             if data.empty?
-                ''
+                ""
             else
                 # TODO: Check for input validity!
-                _decode_aes256 :cbc, data[1, 16], data[17..-1]
+                decode_aes256 :cbc, data[1, 16], data[17..-1], encryption_key
             end
         end
 
@@ -194,90 +142,23 @@ module LastPass
         # Next 24 bytes are the base64 encoded IV for the cipher.
         # Then comes the '|'.
         # And the rest is the base64 encoded encrypted payload.
-        def decode_aes256_cbc_base64 data
+        def self.decode_aes256_cbc_base64 data, encryption_key
             if data.empty?
-                ''
+                ""
             else
                 # TODO: Check for input validity!
-                _decode_aes256 :cbc, decode_base64(data[1, 24]), decode_base64(data[26..-1])
+                decode_aes256 :cbc, decode_base64(data[1, 24]), decode_base64(data[26..-1]), encryption_key
             end
         end
 
-        # Hidden, so it's not discoverable as 'decode_*'.
         # Allowed ciphers are :ecb and :cbc.
         # If for :ecb iv is not used and should be set to ''.
-        def _decode_aes256 cipher, iv, data
+        def self.decode_aes256 cipher, iv, data, encryption_key
             aes = OpenSSL::Cipher::Cipher.new "aes-256-#{cipher}"
             aes.decrypt
-            aes.key = @encryption_key
+            aes.key = encryption_key
             aes.iv = iv
             aes.update(data) + aes.final
-        end
-
-        #
-        # Parsing
-        #
-
-        # Generic itemized chunk parser.  Info parameter should look like this:
-        # [
-        #   {:name => 'item_name1'},
-        #   {:name => 'item_name2', :encoding => :hex},
-        #   {:name => 'item_name3', :encoding => :aes256}
-        # ]
-        def parse_itemized_chunk stream, info
-            chunk = {}
-
-            info.each do |item_info|
-                chunk[item_info[:name]] = parse_item stream, item_info[:encoding]
-            end
-
-            chunk
-        end
-
-        # Itemized chunk item parser. For the list of allowed encodings see 'decode'.
-        # Returns decoded payload.
-        def parse_item stream, encoding = nil
-            decode read_item(stream)[:payload], encoding
-        end
-
-        #
-        # Chunk parsers
-        #
-
-        # 'ACCT' chunk contains account information
-        def parse_chunk_ACCT stream
-            parse_itemized_chunk stream, [
-                {:name => :id},
-                {:name => :name, :encoding => :aes256},
-                {:name => :group, :encoding => :aes256},
-                {:name => :url, :encoding => :hex},
-                {:name => :extra},
-                {:name => :favorite},
-                {:name => :shared_from_id},
-                {:name => :username, :encoding => :aes256},
-                {:name => :password, :encoding => :aes256},
-                {:name => :password_protected},
-                {:name => :generated_password},
-                {:name => :sn}, # ?
-                {:name => :last_touched},
-                {:name => :auto_login},
-                {:name => :never_autofill},
-                {:name => :realm_data},
-                {:name => :fiid}, # ?
-                {:name => :custom_js},
-                {:name => :submit_id},
-                {:name => :captcha_id},
-                {:name => :urid}, # ?
-                {:name => :basic_authorization},
-                {:name => :method},
-                {:name => :action, :encoding => :hex},
-                {:name => :group_id},
-                {:name => :deleted},
-                {:name => :attach_key},
-                {:name => :attach_present},
-                {:name => :individual_share},
-                {:name => :unknown1}
-            ]
         end
     end
 end

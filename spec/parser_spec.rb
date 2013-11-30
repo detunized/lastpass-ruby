@@ -8,6 +8,7 @@ describe LastPass::Parser do
     let(:key_iteration_count) { 5000 }
     let(:blob) { LastPass::Blob.new TEST_BLOB, key_iteration_count }
     let(:padding) { "BEEFFACE"}
+    let(:encryption_key) { "OfOUvVnQzB4v49sNh4+PdwIFb9Fr5+jVfWRTf+E2Ghg=".decode64 }
 
     describe ".extract_chunks" do
         context "returned chunks" do
@@ -143,6 +144,129 @@ describe LastPass::Parser do
         it "raises exception on invalid characters" do
             expect { LastPass::Parser.decode_hex "xz" }
                 .to raise_error ArgumentError, "Input contains invalid characters"
+        end
+    end
+
+    describe ".decode_base64" do
+        it "decodes base64" do
+            def check base64, plain
+                expect(LastPass::Parser.decode_base64 base64).to eq plain
+            end
+
+            check "", ""
+            check "YQ==", "a"
+            check "YWI=", "ab"
+            check "YWJj", "abc"
+            check "YWJjZA==", "abcd"
+        end
+    end
+
+    describe ".decode_aes256_auto" do
+        def check encoded, decoded
+            expect(LastPass::Parser.decode_aes256_auto encoded, encryption_key)
+                .to eq decoded
+        end
+
+        it "decodes a blank string" do
+            check "", ""
+        end
+
+        it "decodes ECB/plain string" do
+            check "BNhd3Q3ZVODxk9c0C788NUPTIfYnZuxXfkghtMJ8jVM=".decode64,
+                   "All your base are belong to us"
+        end
+
+        it "decodes ECB/base64 string" do
+            check "BNhd3Q3ZVODxk9c0C788NUPTIfYnZuxXfkghtMJ8jVM=",
+                   "All your base are belong to us"
+        end
+
+        it "decodes CBC/plain string" do
+            check "IcokDWmjOkKtLpZehWKL6666Uj6fNXPpX6lLWlou+1Lrwb+D3ymP6BAwd6C0TB3hSA==".decode64,
+                   "All your base are belong to us"
+        end
+
+        it "decodes CBC/base64 string" do
+            check "!YFuiAVZgOD2K+s6y8yaMOw==|TZ1+if9ofqRKTatyUaOnfudletslMJ/RZyUwJuR/+aI=",
+                   "All your base are belong to us"
+        end
+    end
+
+    describe ".decode_aes256_ecb_plain" do
+        def check encoded, decoded
+            expect(LastPass::Parser.decode_aes256_ecb_plain encoded.decode64, encryption_key)
+                .to eq decoded
+        end
+
+        it "decodes a blank string" do
+            check "", ""
+        end
+
+        it "decodes a short string" do
+            check "8mHxIA8rul6eq72a/Gq2iw==", "0123456789"
+        end
+
+        it "decodes a long string" do
+            check "BNhd3Q3ZVODxk9c0C788NUPTIfYnZuxXfkghtMJ8jVM=", "All your base are belong to us"
+        end
+    end
+
+    describe ".decode_aes256_ecb_base64" do
+        def check encoded, decoded
+            expect(LastPass::Parser.decode_aes256_ecb_base64 encoded, encryption_key)
+                .to eq decoded
+        end
+
+        it "decodes a blank string" do
+            check "", ""
+        end
+
+        it "decodes a short string" do
+            check "8mHxIA8rul6eq72a/Gq2iw==", "0123456789"
+        end
+
+        it "decodes a long string" do
+            check "BNhd3Q3ZVODxk9c0C788NUPTIfYnZuxXfkghtMJ8jVM=", "All your base are belong to us"
+        end
+    end
+
+    describe ".decode_aes256_cbc_plain" do
+        def check encoded, decoded
+            expect(LastPass::Parser.decode_aes256_cbc_plain encoded.decode64, encryption_key)
+                .to eq decoded
+        end
+
+        it "decodes a blank string" do
+            check "", ""
+        end
+
+        it "decodes a short string" do
+            check "IQ+hiIy0vGG4srsHmXChe3ehWc/rYPnfiyqOG8h78DdX", "0123456789"
+        end
+
+        it "decodes a long string" do
+            check "IcokDWmjOkKtLpZehWKL6666Uj6fNXPpX6lLWlou+1Lrwb+D3ymP6BAwd6C0TB3hSA==",
+                  "All your base are belong to us"
+        end
+    end
+
+    describe ".decode_aes256_cbc_base64" do
+        def check encoded, decoded
+            expect(LastPass::Parser.decode_aes256_cbc_base64 encoded, encryption_key)
+                .to eq decoded
+        end
+
+        it "decodes a blank string" do
+            check "", ""
+        end
+
+        it "decodes a short string" do
+            check "!6TZb9bbrqpocMaNgFjrhjw==|f7RcJ7UowesqGk+um+P5ug==", "0123456789"
+        end
+
+        it "decodes a long string" do
+            check "!YFuiAVZgOD2K+s6y8yaMOw==|TZ1+if9ofqRKTatyUaOnfudletslMJ/RZyUwJuR/+aI=",
+                  "All your base are belong to us"
         end
     end
 
