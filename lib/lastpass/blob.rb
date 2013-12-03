@@ -10,5 +10,9 @@ module LastPass
             @bytes = bytes
             @key_iteration_count = key_iteration_count
         end
+
+        def encryption_key username, password
+            Fetcher.make_key username, password, key_iteration_count
+        end
     end
 end
