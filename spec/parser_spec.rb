@@ -40,7 +40,7 @@ describe LastPass::Parser do
         let(:accounts) {
             LastPass::Parser
                 .extract_chunks(blob)["ACCT"]
-                .map { |i| LastPass::Parser.parse_account i, encryption_key }
+                .map { |i| LastPass::Parser.parse_account i, TEST_ENCRYPTION_KEY }
         }
 
         it "parses accounts" do

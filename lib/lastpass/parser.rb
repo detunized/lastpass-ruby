@@ -25,12 +25,12 @@ module LastPass
         def self.parse_account chunk, encryption_key
             StringIO.open chunk.payload do |io|
                 id = read_item io
-                name = read_item io
-                group = read_item io
+                name = decode_aes256_auto read_item(io), encryption_key
+                group = decode_aes256_auto read_item(io), encryption_key
                 url = decode_hex read_item io
                 3.times { skip_item io }
-                username = read_item io
-                password = read_item io
+                username = decode_aes256_auto read_item(io), encryption_key
+                password = decode_aes256_auto read_item(io), encryption_key
 
                 Account.new id, name, username, password, url, group
             end

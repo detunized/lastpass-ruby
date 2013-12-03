@@ -5,9 +5,13 @@ require "spec_helper"
 require "test_data"
 
 describe LastPass::Vault do
-    let(:vault) { LastPass::Vault.open LastPass::Blob.new(TEST_BLOB, TEST_KEY_ITERATION_COUNT),
-                                       "username",
-                                       "password" }
+    let(:vault) {
+        # Need to crack the Vault open to be able to call new on it for testing purposes
+        LastPass::Vault.public_class_method :new
+
+        LastPass::Vault.new LastPass::Blob.new(TEST_BLOB, TEST_KEY_ITERATION_COUNT),
+                            TEST_ENCRYPTION_KEY
+    }
 
     describe "#accounts" do
         context "returned accounts" do
