@@ -6,6 +6,11 @@ require "yaml"
 
 credentials = YAML.load_file File.join File.dirname(__FILE__), "credentials.yaml"
 
-session = LastPass::Fetcher.login credentials["username"], credentials["password"]
-blob = LastPass::Fetcher.fetch session
-vault = LastPass::Vault.new blob
+username = credentials["username"]
+password = credentials["password"]
+
+vault = LastPass::Vault.open_remote username, password
+
+vault.accounts.each_with_index do |i, index|
+    puts "#{index + 1}: #{i.id} #{i.name} #{i.username} #{i.password} #{i.url} #{i.group}}"
+end

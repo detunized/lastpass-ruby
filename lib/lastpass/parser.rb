@@ -22,7 +22,7 @@ module LastPass
             chunks
         end
 
-        def self.parse_account chunk
+        def self.parse_account chunk, encryption_key
             StringIO.open chunk.payload do |io|
                 id = read_item io
                 name = read_item io
