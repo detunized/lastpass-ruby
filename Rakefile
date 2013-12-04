@@ -1,12 +1,16 @@
 # Copyright (C) 2013 Dmitry Yakimenko (detunized@gmail.com).
 # Licensed under the terms of the MIT license. See LICENCE for details.
 
-require 'rake/testtask'
+require "rspec/core/rake_task"
 
-task :default => :test
+task :default => :spec
 
-Rake::TestTask.new :test
+# Spec
+RSpec::Core::RakeTask.new :spec do |task|
+    task.rspec_opts = "--format nested --color"
+end
 
+# Example
 task :example do
     ruby "-Ilib", "example/example.rb"
 end
