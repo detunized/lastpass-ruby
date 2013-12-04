@@ -3,6 +3,7 @@
 
 module LastPass
     class Parser
+        # Splits the blob into chucks grouped by kind.
         def self.extract_chunks blob
             chunks = Hash.new { |hash, key| hash[key] = [] }
 
@@ -16,6 +17,8 @@ module LastPass
             chunks
         end
 
+        # Parses an account chunk, decrypts and creates an Account object.
+        # TODO: See if this should be part of Account class.
         def self.parse_account chunk, encryption_key
             StringIO.open chunk.payload do |io|
                 id = read_item io
@@ -30,19 +33,20 @@ module LastPass
             end
         end
 
+        # Reads one chunk from a stream and creates a Chunk object with the data read.
         def self.read_chunk stream
             # LastPass blob chunk is made up of 4-byte ID,
             # big endian 4-byte size and payload of that size.
             #
             # Example:
-            #   0000: 'IDID'
+            #   0000: "IDID"
             #   0004: 4
             #   0008: 0xDE 0xAD 0xBE 0xEF
             #   000C: --- Next chunk ---
-
             Chunk.new read_id(stream), read_payload(stream, read_size(stream))
         end
 
+        # Reads an item from a stream and returns it as a string of bytes.
         def self.read_item stream
             # An item in an itemized chunk is made up of the
             # big endian size and the payload of that size.
@@ -51,30 +55,35 @@ module LastPass
             #   0000: 4
             #   0004: 0xDE 0xAD 0xBE 0xEF
             #   0008: --- Next item ---
-
             read_payload stream, read_size(stream)
         end
 
+        # Skips an item in a stream.
         def self.skip_item stream
             read_item stream
         end
 
+        # Reads a chunk ID from a stream.
         def self.read_id stream
             stream.read 4
         end
 
+        # Reads a chunk or an item ID.
         def self.read_size stream
             read_uint32 stream
         end
 
+        # Reads a payload of a given size from a stream.
         def self.read_payload stream, size
             stream.read size
         end
 
+        # Reads an unsigned 32 bit integer from a stream.
         def self.read_uint32 stream
             stream.read(4).unpack("N").first
         end
 
+        # Decodes a hex encoded string into raw bytes.
         def self.decode_hex data
             raise ArgumentError, "Input length must be multple of 2" unless data.size % 2 == 0
             raise ArgumentError, "Input contains invalid characters" unless data =~ /^[0-9a-f]*$/i
@@ -82,12 +91,16 @@ module LastPass
             data.scan(/../).map { |i| i.to_i 16 }.pack "c*"
         end
 
+        # Decodes a base64 encoded string into raw bytes.
         def self.decode_base64 data
-            # TODO: Check for input validity
+            # TODO: Check for input validity!
             Base64.decode64 data
         end
 
         # Guesses AES encoding/cipher from the length of the data.
+        # Possible combinations are:
+        #   - ciphers: AES-256 EBC, AES-256 CBC
+        #   - encodings: plain, base64
         def self.decode_aes256_auto data, encryption_key
             length = data.length
             length16 = length % 16
@@ -108,6 +121,7 @@ module LastPass
             end
         end
 
+        # Decrypts AES-256 ECB bytes.
         def self.decode_aes256_ecb_plain data, encryption_key
             if data.empty?
                 ""
@@ -116,37 +130,49 @@ module LastPass
             end
         end
 
+        # Decrypts base64 encoded AES-256 ECB bytes.
         def self.decode_aes256_ecb_base64 data, encryption_key
             decode_aes256_ecb_plain decode_base64(data), encryption_key
         end
 
-        # LastPass AES-256/CBC encryted string starts with '!'.
-        # Next 16 bytes are the IV for the cipher.
-        # And the rest is the encrypted payload.
+        # Decrypts AES-256 CBC bytes.
         def self.decode_aes256_cbc_plain data, encryption_key
             if data.empty?
                 ""
             else
+                # LastPass AES-256/CBC encryted string starts with an "!".
+                # Next 16 bytes are the IV for the cipher.
+                # And the rest is the encrypted payload.
+
                 # TODO: Check for input validity!
-                decode_aes256 :cbc, data[1, 16], data[17..-1], encryption_key
+                decode_aes256 :cbc,
+                              data[1, 16],
+                              data[17..-1],
+                              encryption_key
             end
         end
 
-        # LastPass AES-256/CBC/base64 encryted string starts with '!'.
-        # Next 24 bytes are the base64 encoded IV for the cipher.
-        # Then comes the '|'.
-        # And the rest is the base64 encoded encrypted payload.
+        # Decrypts base64 encoded AES-256 CBC bytes.
         def self.decode_aes256_cbc_base64 data, encryption_key
             if data.empty?
                 ""
             else
+                # LastPass AES-256/CBC/base64 encryted string starts with an "!".
+                # Next 24 bytes are the base64 encoded IV for the cipher.
+                # Then comes the "|".
+                # And the rest is the base64 encoded encrypted payload.
+
                 # TODO: Check for input validity!
-                decode_aes256 :cbc, decode_base64(data[1, 24]), decode_base64(data[26..-1]), encryption_key
+                decode_aes256 :cbc,
+                              decode_base64(data[1, 24]),
+                              decode_base64(data[26..-1]),
+                              encryption_key
             end
         end
 
-        # Allowed ciphers are :ecb and :cbc.
-        # If for :ecb iv is not used and should be set to ''.
+        # Decrypt AES-256 bytes.
+        # Allowed ciphers are: :ecb, :cbc.
+        # If for :ecb iv is not used and should be set to "".
         def self.decode_aes256 cipher, iv, data, encryption_key
             aes = OpenSSL::Cipher::Cipher.new "aes-256-#{cipher}"
             aes.decrypt
