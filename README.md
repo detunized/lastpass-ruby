@@ -1,6 +1,7 @@
 LastPass Ruby API
 =================
 
+[![Build Status](https://travis-ci.org/detunized/lastpass-ruby.png?branch=master)](https://travis-ci.org/detunized/lastpass-ruby)
 [![Code Climate](https://codeclimate.com/github/detunized/lastpass-ruby.png)](https://codeclimate.com/github/detunized/lastpass-ruby)
 
 **This is unofficial LastPass API.**
