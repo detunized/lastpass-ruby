@@ -4,15 +4,15 @@ LastPass Ruby API
 **This is unofficial LastPass API.**
 
 This library implements fetching and parsing of LastPass data.  The library is
-still at the proof of concept stage and doesn't support all LastPass features
+still in the proof of concept stage and doesn't support all LastPass features
 yet.  Only account information (logins, passwords, urls, etc.) is available so
 far.
 
-There's a low level API which is used to fetch and parse data from the
-LastPass server. Normally is not the one you would want to use. What you want
-is the `Vault` class which hides all the complexity and exposes all the
-accounts already decrypted and ready to use. See the example program for
-detail.
+There is a low level API which is used to fetch the data from the LastPass
+server and parse it. Normally this is not the one you would want to use. What
+you want is the `Vault` class which hides all the complexity and exposes all
+the accounts already parsed, decrypted and ready to use. See the example
+program for detail.
 
 A quick example of accessing your account information:
 
