@@ -1,130 +1,125 @@
-require 'pbkdf2'
-require 'httparty'
+# Copyright (C) 2013 Dmitry Yakimenko (detunized@gmail.com).
+# Licensed under the terms of the MIT license. See LICENCE for details.
 
 module LastPass
     class Fetcher
-        class << self
-            def fetch username, password, iterations = 1
-                fetcher = Fetcher.new username, password, iterations
-                fetcher.send :fetch # To avoid exposing fetch
-
-                fetcher
-            end
-
-            def make_key username, password, iterations = 1
-                if iterations == 1
-                    Digest::SHA256.digest username + password
-                else
-                    PBKDF2.new(
-                        :password => password,
-                        :salt => username,
-                        :iterations => iterations,
-                        :key_length => 32
-                    ).bin_string.force_encoding 'BINARY'
-                end
-            end
-
-            def make_hash username, password, iterations = 1
-                if iterations == 1
-                    Digest::SHA256.hexdigest(Digest.hexencode(make_key(username, password, 1)) + password)
-                else
-                    PBKDF2.new(
-                        :password => make_key(username, password, iterations),
-                        :salt => password,
-                        :iterations => 1,
-                        :key_length => 32
-                    ).hex_string
-                end
-            end
+        def self.login username, password
+            key_iteration_count = request_iteration_count username
+            request_login username, password, key_iteration_count
         end
 
-        # Binary blob received from LastPass, which should handed off to the parser
-        attr_reader :blob
+        def self.fetch session, web_client = HTTParty
+            response = web_client.get "https://lastpass.com/getaccts.php?mobile=1&b64=1&hash=0.0",
+                                      format: :plain,
+                                      cookies: {"PHPSESSID" => URI.encode(session.id)}
 
-        # The encryption key, which also have to be sent to the parser for it to be able
-        # to decrypt the account data.
-        attr_reader :encryption_key
+            raise NetworkError unless response.response.is_a? Net::HTTPOK
 
-        # Number of iterations used in the key generation process.  It could be stored and
-        # used later to save one extra request during the fetch process.  Normally, when
-        # an incorrect number is given, the LastPass server responds with the correct one
-        # and the key/hash pair is regenerated and sent back in the follow-up request.
-        # You can also see this number in your account settings under General ->
-        # Password Iterations (PBKDF2).  Set it to something big, like 500 or even bigger.
-        attr_reader :iterations
-
-        private
-
-        def initialize username, password, iterations
-            @username = username
-            @password = password
-            @iterations = iterations
+            Blob.new decode_blob(response.parsed_response), session.key_iteration_count
         end
 
-        def fetch
-            @blob = fetch_blob login
-        end
+        def self.request_iteration_count username, web_client = HTTParty
+            response = web_client.post "https://lastpass.com/iterations.php",
+                                       query: {email: username}
 
-        # Returns the created session id
-        def login
-            @encryption_key = Fetcher.make_key @username, @password, @iterations
+            raise NetworkError unless response.response.is_a? Net::HTTPOK
 
-            options = {
-                'method' => 'mobile',
-                'web' => 1,
-                'xml' => 1,
-                'username' => @username,
-                'hash' => Fetcher.make_hash(@username, @password, @iterations),
-                'iterations' => @iterations
-            }
-
-            handle_login_response HTTParty.post 'https://lastpass.com/login.php', {
-                :output => 'xml',
-                :query => options,
-                :body => options
-            }
-        end
-
-        # Returns the created session id
-        def handle_login_response response
-            if !Net::HTTPOK === response.response
-                raise RuntimeError, "Failed to login: '#{response}'"
+            begin
+                count = Integer response.parsed_response
+            rescue ArgumentError
+                raise InvalidResponse, "Key iteration count is invalid"
             end
+
+            raise InvalidResponse, "Key iteration count is not positive" unless count > 0
+
+            count
+        end
+
+        def self.request_login username, password, key_iteration_count, web_client = HTTParty
+            response = web_client.post "https://lastpass.com/login.php",
+                                       format: :xml,
+                                       body: {
+                                           method: "mobile",
+                                           web: 1,
+                                           xml: 1,
+                                           username: username,
+                                           hash: make_hash(username, password, key_iteration_count),
+                                           iterations: key_iteration_count
+                                       }
+
+            raise NetworkError unless response.response.is_a? Net::HTTPOK
 
             parsed_response = response.parsed_response
-            if !Hash === parsed_response
-                raise RuntimeError, "Failed to login, cannot parse the response: '#{response}'"
-            end
+            raise InvalidResponse unless parsed_response.is_a? Hash
 
-            if Hash === parsed_response['ok'] && (session_id = parsed_response['ok']['sessionid'])
-                session_id
-            elsif Hash === parsed_response['response'] && Hash === parsed_response['response']['error']
-                if iterations = parsed_response['response']['error']['iterations']
-                    @iterations = iterations.to_i
-                    login
-                elsif message = parsed_response['response']['error']['message']
-                    raise RuntimeError, "Failed to login, LastPass says '#{message}'"
-                elsif
-                    raise RuntimeError, 'Failed to login, LastPass responded with an unknown error'
+            create_session parsed_response, key_iteration_count or
+                raise login_error parsed_response
+        end
+
+        def self.create_session parsed_response, key_iteration_count
+            ok = parsed_response["ok"]
+            if ok.is_a? Hash
+                session_id = ok["sessionid"]
+                if session_id.is_a? String
+                    return Session.new session_id, key_iteration_count
                 end
+            end
+
+            nil
+        end
+
+        def self.login_error parsed_response
+            error = (parsed_response["response"] || {})["error"]
+            return UnknownResponseSchema unless error.is_a? Hash
+
+            exceptions = {
+                "unknownemail" => LastPassUnknownUsername,
+                "unknownpassword" => LastPassInvalidPassword,
+            }
+
+            cause = error["cause"]
+            message = error["message"]
+
+            if cause
+                (exceptions[cause] || LastPassUnknownError).new message || cause
             else
-                raise RuntimeError, 'Failed to login, the reason is unknown'
+                InvalidResponse.new message
             end
         end
 
-        # Returns the blob which should be passed by the client to the parser
-        def fetch_blob session_id
-            response = HTTParty.get(
-                "https://lastpass.com/getaccts.php?mobile=1&b64=1&hash=0.0",
-                :output => :plain,
-                :cookies => {'PHPSESSID' => URI.encode(session_id)}
-            )
+        def self.decode_blob blob
+            # TODO: Check for invalid base64
+            Base64.decode64 blob
+        end
 
-            if Net::HTTPOK === response.response
-                response.parsed_response
+        def self.make_key username, password, key_iteration_count
+            if key_iteration_count == 1
+                Digest::SHA256.digest username + password
             else
-                raise RuntimeError, "Failed to fetch data from LastPass"
+                PBKDF2
+                    .new(password: password,
+                         salt: username,
+                         iterations: key_iteration_count,
+                         key_length: 32)
+                    .bin_string
+                    .force_encoding "BINARY"
             end
         end
+
+        def self.make_hash username, password, key_iteration_count
+            if key_iteration_count == 1
+                Digest::SHA256.hexdigest Digest.hexencode(make_key(username, password, 1)) + password
+            else
+                PBKDF2
+                    .new(password: make_key(username, password, key_iteration_count),
+                         salt: password,
+                         iterations: 1,
+                         key_length: 32)
+                    .hex_string
+            end
+        end
+
+        # Can't instantiate Fetcher
+        private_class_method :new
     end
 end
