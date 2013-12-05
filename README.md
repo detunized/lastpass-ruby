@@ -36,8 +36,8 @@ There's an iOS app called [LostPass](http://detunized.net/lostpass/) that is
 based on a totally incomplete C++ port of this library.  If you are a LastPass
 user it would have made your life much easier if I didn't have to take it down
 from the App Store. Now it's open source and if you have a developer account
-or a jailbroken phone you could build it and install it the phone. The source
-code is [here](https://github.com/detunized/LostPass).
+or a jailbroken phone you could build it and install it on the phone. The
+source code is [here](https://github.com/detunized/LostPass).
 
 
 Contributing
