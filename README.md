@@ -1,6 +1,8 @@
 LastPass Ruby API
 =================
 
+[![Code Climate](https://codeclimate.com/github/detunized/lastpass-ruby.png)](https://codeclimate.com/github/detunized/lastpass-ruby)
+
 **This is unofficial LastPass API.**
 
 This library implements fetching and parsing of LastPass data.  The library is
