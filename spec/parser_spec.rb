@@ -120,20 +120,24 @@ describe LastPass::Parser do
 
     describe ".decode_hex" do
         it "decodes hex" do
+            def hex s
+                s.force_encoding "ASCII-8BIT"
+            end
+
             expect(LastPass::Parser.decode_hex "")
                 .to eq ""
 
             expect(LastPass::Parser.decode_hex "00ff")
-                .to eq "\x00\xFF"
+                .to eq hex "\x00\xFF"
 
             expect(LastPass::Parser.decode_hex "00010203040506070809")
-                .to eq "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09"
+                .to eq hex "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09"
 
             expect(LastPass::Parser.decode_hex "000102030405060708090a0b0c0d0e0f")
-                .to eq "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F"
+                .to eq hex "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F"
 
             expect(LastPass::Parser.decode_hex "8af633933e96a3c3550c2734bd814195")
-                .to eq "\x8A\xF6\x33\x93\x3E\x96\xA3\xC3\x55\x0C\x27\x34\xBD\x81\x41\x95"
+                .to eq hex "\x8A\xF6\x33\x93\x3E\x96\xA3\xC3\x55\x0C\x27\x34\xBD\x81\x41\x95"
         end
 
         it "raises exception on odd length" do
