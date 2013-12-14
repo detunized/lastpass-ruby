@@ -1,3 +1,4 @@
 Gemfile.lock
+lastpass-*.gem
 coverage
 example/credentials.yaml
