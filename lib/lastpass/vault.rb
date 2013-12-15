@@ -25,7 +25,7 @@ module LastPass
             Fetcher.fetch Fetcher.login username, password
         end
 
-        # This more of an internal method, use of the static constructors instead
+        # This more of an internal method, use one of the static constructors instead
         def initialize blob, encryption_key
             chunks = Parser.extract_chunks blob
             @accounts = (chunks["ACCT"] || []).map { |i| Parser.parse_account i, encryption_key }
