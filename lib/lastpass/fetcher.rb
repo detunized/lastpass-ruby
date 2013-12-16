@@ -27,10 +27,10 @@ module LastPass
             begin
                 count = Integer response.parsed_response
             rescue ArgumentError
-                raise InvalidResponse, "Key iteration count is invalid"
+                raise InvalidResponseError, "Key iteration count is invalid"
             end
 
-            raise InvalidResponse, "Key iteration count is not positive" unless count > 0
+            raise InvalidResponseError, "Key iteration count is not positive" unless count > 0
 
             count
         end
@@ -50,7 +50,7 @@ module LastPass
             raise NetworkError unless response.response.is_a? Net::HTTPOK
 
             parsed_response = response.parsed_response
-            raise InvalidResponse unless parsed_response.is_a? Hash
+            raise InvalidResponseError unless parsed_response.is_a? Hash
 
             create_session parsed_response, key_iteration_count or
                 raise login_error parsed_response
@@ -70,11 +70,11 @@ module LastPass
 
         def self.login_error parsed_response
             error = (parsed_response["response"] || {})["error"]
-            return UnknownResponseSchema unless error.is_a? Hash
+            return UnknownResponseSchemaError unless error.is_a? Hash
 
             exceptions = {
-                "unknownemail" => LastPassUnknownUsername,
-                "unknownpassword" => LastPassInvalidPassword,
+                "unknownemail" => LastPassUnknownUsernameError,
+                "unknownpassword" => LastPassInvalidPasswordError,
             }
 
             cause = error["cause"]
@@ -83,7 +83,7 @@ module LastPass
             if cause
                 (exceptions[cause] || LastPassUnknownError).new message || cause
             else
-                InvalidResponse.new message
+                InvalidResponseError.new message
             end
         end
 

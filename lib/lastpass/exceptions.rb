@@ -13,20 +13,20 @@ module LastPass
     class NetworkError < Error; end
 
     # Server responded with something we don't understand
-    class InvalidResponse < Error; end
+    class InvalidResponseError < Error; end
 
     # Server responded with XML we don't understand
-    class UnknownResponseSchema < Error; end
+    class UnknownResponseSchemaError < Error; end
 
     #
     # LastPass returned errors
     #
 
     # LastPass error: unknown username
-    class LastPassUnknownUsername < Error; end
+    class LastPassUnknownUsernameError < Error; end
 
     # LastPass error: invalid password
-    class LastPassInvalidPassword < Error; end
+    class LastPassInvalidPasswordError < Error; end
 
     # LastPass error we don't know about
     class LastPassUnknownError < Error; end
