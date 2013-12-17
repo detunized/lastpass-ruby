@@ -7,11 +7,18 @@ describe LastPass::Fetcher do
     let(:username) { "username" }
     let(:password) { "password" }
     let(:key_iteration_count) { 5000 }
+    let(:hash) { "7880a04588cfab954aa1a2da98fd9c0d2c6eba4c53e36a94510e6dbf30759256" }
     let(:session_id) { "53ru,Hb713QnEVM5zWZ16jMvxS0" }
     let(:session) { LastPass::Session.new session_id, key_iteration_count }
     let(:blob_response) { "TFBBVgAAAAMxMjJQUkVNAAAACjE0MTQ5" }
     let(:blob_bytes) { blob_response.decode64 }
     let(:blob) { LastPass::Blob.new blob_bytes, key_iteration_count }
+    let(:login_post_data) { {method: "mobile",
+                             web: 1,
+                             xml: 1,
+                             username: username,
+                             hash: hash,
+                             iterations: key_iteration_count} }
 
     describe ".request_iteration_count" do
         it "makes a POST request" do
@@ -61,7 +68,7 @@ describe LastPass::Fetcher do
     describe ".request_login" do
         it "makes a POST request" do
             expect(web_client = double("web_client")).to receive(:post)
-                .with("https://lastpass.com/login.php", format: :xml, body: anything)
+                .with("https://lastpass.com/login.php", format: :xml, body: login_post_data)
                 .and_return(http_ok("ok" => {"sessionid" => session_id}))
 
             LastPass::Fetcher.request_login username, password, key_iteration_count, web_client
