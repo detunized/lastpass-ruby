@@ -3,9 +3,9 @@
 
 module LastPass
     class Fetcher
-        def self.login username, password
+        def self.login username, password, multifactor_password = nil
             key_iteration_count = request_iteration_count username
-            request_login username, password, key_iteration_count
+            request_login username, password, key_iteration_count, multifactor_password
         end
 
         def self.fetch session, web_client = HTTParty
@@ -35,17 +35,26 @@ module LastPass
             count
         end
 
-        def self.request_login username, password, key_iteration_count, web_client = HTTParty
+        def self.request_login username,
+                               password,
+                               key_iteration_count,
+                               multifactor_password = nil,
+                               web_client = HTTParty
+
+            body = {
+                method: "mobile",
+                web: 1,
+                xml: 1,
+                username: username,
+                hash: make_hash(username, password, key_iteration_count),
+                iterations: key_iteration_count
+            }
+
+            body[:otp] = multifactor_password if multifactor_password
+
             response = web_client.post "https://lastpass.com/login.php",
                                        format: :xml,
-                                       body: {
-                                           method: "mobile",
-                                           web: 1,
-                                           xml: 1,
-                                           username: username,
-                                           hash: make_hash(username, password, key_iteration_count),
-                                           iterations: key_iteration_count
-                                       }
+                                       body: body
 
             raise NetworkError unless response.response.is_a? Net::HTTPOK
 

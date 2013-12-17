@@ -71,7 +71,7 @@ describe LastPass::Fetcher do
                 .with("https://lastpass.com/login.php", format: :xml, body: login_post_data)
                 .and_return(http_ok("ok" => {"sessionid" => session_id}))
 
-            LastPass::Fetcher.request_login username, password, key_iteration_count, web_client
+            LastPass::Fetcher.request_login username, password, key_iteration_count, nil, web_client
         end
 
         it "returns a session" do
@@ -230,6 +230,7 @@ describe LastPass::Fetcher do
         LastPass::Fetcher.request_login username,
                                         password,
                                         key_iteration_count,
+                                        nil,
                                         double("web_client", post: response)
     end
 end
