@@ -19,6 +19,8 @@ describe LastPass::Fetcher do
                              username: username,
                              hash: hash,
                              iterations: key_iteration_count} }
+    let(:google_authenticator_code) { "123456" }
+    let(:login_post_data_with_google_authenticator_code) { login_post_data.merge({otp: google_authenticator_code})}
 
     describe ".request_iteration_count" do
         it "makes a POST request" do
@@ -74,6 +76,18 @@ describe LastPass::Fetcher do
             LastPass::Fetcher.request_login username, password, key_iteration_count, nil, web_client
         end
 
+        it "makes a POST request with Google Authenticator code" do
+            expect(web_client = double("web_client")).to receive(:post)
+                .with("https://lastpass.com/login.php", format: :xml, body: login_post_data_with_google_authenticator_code)
+                .and_return(http_ok("ok" => {"sessionid" => session_id}))
+
+            LastPass::Fetcher.request_login username,
+                                            password,
+                                            key_iteration_count,
+                                            google_authenticator_code,
+                                            web_client
+        end
+
         it "returns a session" do
             expect(request_login_with_xml "<ok sessionid='#{session_id}' />").to eq session
         end
@@ -109,6 +123,18 @@ describe LastPass::Fetcher do
             message = "Invalid password!"
             expect { request_login_with_lastpass_error "unknownpassword", message }
                 .to raise_error LastPass::LastPassInvalidPasswordError, message
+        end
+
+        it "raises an exception on missing Google Authenticator code" do
+            message = "Google Authenticator authentication required! Upgrade your browser extension so you can enter it."
+            expect { request_login_with_lastpass_error "googleauthrequired", message }
+                .to raise_error LastPass::LastPassIncorrectGoogleAuthenticatorCodeError, message
+        end
+
+        it "raises an exception on incorrect Google Authenticator code" do
+            message = "Google Authenticator authentication failed!"
+            expect { request_login_with_lastpass_error "googleauthfailed", message }
+                .to raise_error LastPass::LastPassIncorrectGoogleAuthenticatorCodeError, message
         end
 
         it "raises an exception on unknown LastPass error with a message" do

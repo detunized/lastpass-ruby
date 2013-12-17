@@ -84,6 +84,8 @@ module LastPass
             exceptions = {
                 "unknownemail" => LastPassUnknownUsernameError,
                 "unknownpassword" => LastPassInvalidPasswordError,
+                "googleauthrequired" => LastPassIncorrectGoogleAuthenticatorCodeError,
+                "googleauthfailed" => LastPassIncorrectGoogleAuthenticatorCodeError,
             }
 
             cause = error["cause"]

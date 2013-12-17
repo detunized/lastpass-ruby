@@ -28,6 +28,9 @@ module LastPass
     # LastPass error: invalid password
     class LastPassInvalidPasswordError < Error; end
 
+    # LastPass error: incorrect Google Authenticator code
+    class LastPassIncorrectGoogleAuthenticatorCodeError < Error; end
+
     # LastPass error we don't know about
     class LastPassUnknownError < Error; end
 end
