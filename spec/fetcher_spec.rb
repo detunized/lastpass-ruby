@@ -68,24 +68,25 @@ describe LastPass::Fetcher do
     end
 
     describe ".request_login" do
-        it "makes a POST request" do
-            expect(web_client = double("web_client")).to receive(:post)
-                .with("https://lastpass.com/login.php", format: :xml, body: login_post_data)
-                .and_return(http_ok("ok" => {"sessionid" => session_id}))
-
-            LastPass::Fetcher.request_login username, password, key_iteration_count, nil, web_client
-        end
-
-        it "makes a POST request with Google Authenticator code" do
-            expect(web_client = double("web_client")).to receive(:post)
-                .with("https://lastpass.com/login.php", format: :xml, body: login_post_data_with_google_authenticator_code)
+        def verify_post_request multifactor_password, post_data
+            web_client = double("web_client")
+            expect(web_client).to receive(:post)
+                .with("https://lastpass.com/login.php", format: :xml, body: post_data)
                 .and_return(http_ok("ok" => {"sessionid" => session_id}))
 
             LastPass::Fetcher.request_login username,
                                             password,
                                             key_iteration_count,
-                                            google_authenticator_code,
+                                            multifactor_password,
                                             web_client
+        end
+
+        it "makes a POST request" do
+            verify_post_request nil, login_post_data
+        end
+
+        it "makes a POST request with Google Authenticator code" do
+            verify_post_request google_authenticator_code, login_post_data_with_google_authenticator_code
         end
 
         it "returns a session" do
