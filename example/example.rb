@@ -18,10 +18,17 @@ begin
 rescue LastPass::LastPassIncorrectGoogleAuthenticatorCodeError => e
     # Get the code
     puts "Enter Google Authenticator code:"
-    code = gets.chomp
+    multifactor_password = gets.chomp
 
     # And now retry with the code
-    vault = LastPass::Vault.open_remote username, password, code
+    vault = LastPass::Vault.open_remote username, password, multifactor_password
+rescue LastPass::LastPassIncorrectYubikeyPasswordError => e
+    # Get the password
+    puts "Enter Yubikey password:"
+    multifactor_password = gets.chomp
+
+    # And now retry with the Yubikey password
+    vault = LastPass::Vault.open_remote username, password, multifactor_password
 end
 
 vault.accounts.each_with_index do |i, index|
