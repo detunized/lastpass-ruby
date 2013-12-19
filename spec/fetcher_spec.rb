@@ -7,20 +7,27 @@ describe LastPass::Fetcher do
     let(:username) { "username" }
     let(:password) { "password" }
     let(:key_iteration_count) { 5000 }
+
     let(:hash) { "7880a04588cfab954aa1a2da98fd9c0d2c6eba4c53e36a94510e6dbf30759256" }
     let(:session_id) { "53ru,Hb713QnEVM5zWZ16jMvxS0" }
     let(:session) { LastPass::Session.new session_id, key_iteration_count }
+
     let(:blob_response) { "TFBBVgAAAAMxMjJQUkVNAAAACjE0MTQ5" }
     let(:blob_bytes) { blob_response.decode64 }
     let(:blob) { LastPass::Blob.new blob_bytes, key_iteration_count }
+
     let(:login_post_data) { {method: "mobile",
                              web: 1,
                              xml: 1,
                              username: username,
                              hash: hash,
                              iterations: key_iteration_count} }
+
     let(:google_authenticator_code) { "123456" }
+    let(:yubikey_password) { "emdbwzemyisymdnevznyqhqnklaqheaxszzvtnxjrmkb" }
+
     let(:login_post_data_with_google_authenticator_code) { login_post_data.merge({otp: google_authenticator_code})}
+    let(:login_post_data_with_yubikey_password) { login_post_data.merge({otp: yubikey_password}) }
 
     describe ".request_iteration_count" do
         it "makes a POST request" do
@@ -89,6 +96,10 @@ describe LastPass::Fetcher do
             verify_post_request google_authenticator_code, login_post_data_with_google_authenticator_code
         end
 
+        it "makes a POST request with Yubikey password" do
+            verify_post_request yubikey_password, login_post_data_with_yubikey_password
+        end
+
         it "returns a session" do
             expect(request_login_with_xml "<ok sessionid='#{session_id}' />").to eq session
         end
@@ -127,7 +138,8 @@ describe LastPass::Fetcher do
         end
 
         it "raises an exception on missing Google Authenticator code" do
-            message = "Google Authenticator authentication required! Upgrade your browser extension so you can enter it."
+            message = "Google Authenticator authentication required! " +
+                      "Upgrade your browser extension so you can enter it."
             expect { request_login_with_lastpass_error "googleauthrequired", message }
                 .to raise_error LastPass::LastPassIncorrectGoogleAuthenticatorCodeError, message
         end
@@ -136,6 +148,13 @@ describe LastPass::Fetcher do
             message = "Google Authenticator authentication failed!"
             expect { request_login_with_lastpass_error "googleauthfailed", message }
                 .to raise_error LastPass::LastPassIncorrectGoogleAuthenticatorCodeError, message
+        end
+
+        it "raises an exception on missing/incorrect Yubikey password" do
+            message = "Your account settings have restricted you from logging in " +
+                      "from mobile devices that do not support YubiKey authentication."
+            expect { request_login_with_lastpass_error "yubikeyrestricted", message }
+                .to raise_error LastPass::LastPassIncorrectYubikeyPasswordError, message
         end
 
         it "raises an exception on unknown LastPass error with a message" do

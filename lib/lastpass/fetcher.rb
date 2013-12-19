@@ -86,6 +86,7 @@ module LastPass
                 "unknownpassword" => LastPassInvalidPasswordError,
                 "googleauthrequired" => LastPassIncorrectGoogleAuthenticatorCodeError,
                 "googleauthfailed" => LastPassIncorrectGoogleAuthenticatorCodeError,
+                "yubikeyrestricted" => LastPassIncorrectYubikeyPasswordError,
             }
 
             cause = error["cause"]
