@@ -5,12 +5,11 @@ module LastPass
     class Parser
         # Splits the blob into chucks grouped by kind.
         def self.extract_chunks blob
-            chunks = Hash.new { |hash, key| hash[key] = [] }
+            chunks = []
 
             StringIO.open blob.bytes do |stream|
                 while !stream.eof?
-                    chunk = read_chunk stream
-                    chunks[chunk.id] << chunk
+                    chunks.push read_chunk stream
                 end
             end
 

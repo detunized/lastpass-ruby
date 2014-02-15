@@ -14,24 +14,10 @@ describe LastPass::Parser do
         context "returned chunks" do
             let(:chunks) { LastPass::Parser.extract_chunks blob }
 
-            it { expect(chunks).to be_instance_of Hash }
+            it { expect(chunks).to be_instance_of Array }
 
-            it "all keys are strings" do
-                expect(chunks.keys).to match_array TEST_CHUNK_IDS
-            end
-
-            it "all values are arrays" do
-                expect(chunks.values.map(&:class).uniq).to eq [Array]
-            end
-
-            it "all arrays contain only chunks" do
-                expect(chunks.values.flat_map { |i| i.map &:class }.uniq).to eq [LastPass::Chunk]
-            end
-
-            it "all chunks grouped under correct IDs" do
-                expect(
-                    chunks.all? { |id, chunk_group| chunk_group.map(&:id).uniq == [id] }
-                ).to be_true
+            it "all values are instances of Chunk" do
+                expect(chunks.map(&:class).uniq).to eq [LastPass::Chunk]
             end
         end
     end
@@ -39,7 +25,8 @@ describe LastPass::Parser do
     describe ".parse_account" do
         let(:accounts) {
             LastPass::Parser
-                .extract_chunks(blob)["ACCT"]
+                .extract_chunks(blob)
+                .select { |i| i.id == "ACCT" }
                 .map { |i| LastPass::Parser.parse_account i, TEST_ENCRYPTION_KEY }
         }
 
