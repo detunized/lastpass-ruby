@@ -173,7 +173,7 @@ describe LastPass::Fetcher do
     describe ".fetch" do
         it "makes a GET request" do
             expect(web_client = double("web_client")).to receive(:get)
-                .with("https://lastpass.com/getaccts.php?mobile=1&b64=1&hash=0.0",
+                .with("https://lastpass.com/getaccts.php?mobile=1&b64=1&hash=0.0&hasplugin=3.0.23&requestsrc=android",
                       format: :plain,
                       cookies: {"PHPSESSID" => session_id})
                 .and_return(http_ok(blob_response))

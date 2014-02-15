@@ -9,7 +9,7 @@ module LastPass
         end
 
         def self.fetch session, web_client = HTTParty
-            response = web_client.get "https://lastpass.com/getaccts.php?mobile=1&b64=1&hash=0.0",
+            response = web_client.get "https://lastpass.com/getaccts.php?mobile=1&b64=1&hash=0.0&hasplugin=3.0.23&requestsrc=android",
                                       format: :plain,
                                       cookies: {"PHPSESSID" => URI.encode(session.id)}
 
