@@ -27,10 +27,19 @@ module LastPass
 
         # This more of an internal method, use one of the static constructors instead
         def initialize blob, encryption_key
-            chunks = Parser.extract_chunks blob
-            @accounts = chunks
-                .select { |i| i.id == "ACCT" }
-                .map { |i| Parser.parse_account i, encryption_key }
+            @accounts = []
+
+            Parser.extract_chunks(blob).each do |i|
+                case i.id
+                when "ACCT"
+                    @accounts.push Parser.parse_account i, encryption_key
+                when "SHAR"
+                    # We need to stop at the first shared folder chunk
+                    # All account below are encrypted with different keys
+                    # Not supported at the moment
+                    break
+                end
+            end
         end
     end
 end
