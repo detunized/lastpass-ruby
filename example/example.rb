@@ -32,5 +32,5 @@ rescue LastPass::LastPassIncorrectYubikeyPasswordError => e
 end
 
 vault.accounts.each_with_index do |i, index|
-    puts "#{index + 1}: #{i.id} #{i.name} #{i.username} #{i.password} #{i.url} #{i.group}}"
+    puts "#{index + 1}: #{i.id} #{i.name} #{i.username} #{i.password} #{i.url} #{i.group}"
 end
