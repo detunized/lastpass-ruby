@@ -3,6 +3,9 @@
 
 module LastPass
     class Parser
+        # OpenSSL constant
+        RSA_PKCS1_OAEP_PADDING = 4
+
         # Splits the blob into chucks grouped by kind.
         def self.extract_chunks blob
             chunks = []
@@ -56,17 +59,28 @@ module LastPass
         end
 
         # TODO: Fake some data and make a test
-        def self.parse_SHAR chunk, encryption_key
+        def self.parse_SHAR chunk, encryption_key, rsa_key
             StringIO.open chunk.payload do |io|
                 id = read_item io
-                rsa_key = decode_hex read_item io
+                encrypted_key = decode_hex read_item io
                 encrypted_name = read_item io
                 2.times { skip_item io }
-                key = decode_hex decode_aes256_auto(read_item(io), encryption_key)
+                key = read_item io
+
+                # Shared folder encryption key might come already in pre-decrypted form,
+                # where it's only AES encrypted with the regular encryption key.
+                # When the key is blank, then there's a RSA encrypted key, which has to
+                # be decrypted first before use.
+                key = if key.empty?
+                    decode_hex rsa_key.private_decrypt(encrypted_key, RSA_PKCS1_OAEP_PADDING)
+                else
+                    decode_hex decode_aes256_auto(key, encryption_key)
+                end
+
                 name = decode_aes256_auto encrypted_name, key
 
                 # TODO: Return an object, not a hash
-                {id: id, rsa_key: rsa_key, name: name, key: key}
+                {id: id, name: name, encryption_key: key}
             end
         end
 

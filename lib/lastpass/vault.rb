@@ -30,6 +30,8 @@ module LastPass
             @accounts = []
 
             key = encryption_key
+            rsa_private_key = nil
+
             Parser.extract_chunks(blob).each do |i|
                 case i.id
                 when "ACCT"
@@ -38,7 +40,7 @@ module LastPass
                     rsa_private_key = Parser.parse_PRIK i, encryption_key
                 when "SHAR"
                     # After SHAR chunk all the folliwing accounts are enrypted with a new key
-                    key = Parser.parse_SHAR(i, encryption_key)[:key]
+                    key = Parser.parse_SHAR(i, encryption_key, rsa_private_key)[:encryption_key]
                 end
             end
         end
