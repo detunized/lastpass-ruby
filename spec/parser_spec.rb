@@ -22,12 +22,12 @@ describe LastPass::Parser do
         end
     end
 
-    describe ".parse_account" do
+    describe ".parse_ACCT" do
         let(:accounts) {
             LastPass::Parser
                 .extract_chunks(blob)
                 .select { |i| i.id == "ACCT" }
-                .map { |i| LastPass::Parser.parse_account i, TEST_ENCRYPTION_KEY }
+                .map { |i| LastPass::Parser.parse_ACCT i, TEST_ENCRYPTION_KEY }
         }
 
         it "parses accounts" do

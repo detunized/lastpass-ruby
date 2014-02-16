@@ -17,8 +17,7 @@ module LastPass
         end
 
         # Parses an account chunk, decrypts and creates an Account object.
-        # TODO: See if this should be part of Account class.
-        def self.parse_account chunk, encryption_key
+        def self.parse_ACCT chunk, encryption_key
             StringIO.open chunk.payload do |io|
                 id = read_item io
                 name = decode_aes256_auto read_item(io), encryption_key
@@ -29,6 +28,21 @@ module LastPass
                 password = decode_aes256_auto read_item(io), encryption_key
 
                 Account.new id, name, username, password, url, group
+            end
+        end
+
+        # TODO: Fake some data and make a test
+        def self.parse_SHAR chunk, encryption_key
+            StringIO.open chunk.payload do |io|
+                id = read_item io
+                rsa_key = decode_hex read_item io
+                encrypted_name = read_item io
+                2.times { skip_item io }
+                key = decode_hex decode_aes256_auto(read_item(io), encryption_key)
+                name = decode_aes256_auto encrypted_name, key
+
+                # TODO: Return an object, not a hash
+                {id: id, rsa_key: rsa_key, name: name, key: key}
             end
         end
 
