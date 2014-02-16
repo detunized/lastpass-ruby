@@ -34,6 +34,8 @@ module LastPass
                 case i.id
                 when "ACCT"
                     @accounts.push Parser.parse_ACCT i, key
+                when "PRIK"
+                    rsa_private_key = Parser.parse_PRIK i, encryption_key
                 when "SHAR"
                     # After SHAR chunk all the folliwing accounts are enrypted with a new key
                     key = Parser.parse_SHAR(i, encryption_key)[:key]

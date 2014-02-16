@@ -31,6 +31,30 @@ module LastPass
             end
         end
 
+        # Parse PRIK chunk which contains private RSA key
+        def self.parse_PRIK chunk, encryption_key
+            decrypted = decode_aes256 "cbc",
+                                      encryption_key[0, 16],
+                                      decode_hex(chunk.payload),
+                                      encryption_key
+
+            /^LastPassPrivateKey<(?<hex_key>.*)>LastPassPrivateKey$/ =~ decrypted
+            asn1_encoded_all = OpenSSL::ASN1.decode decode_hex hex_key
+            asn1_encoded_key = OpenSSL::ASN1.decode asn1_encoded_all.value[2].value
+
+            rsa_key = OpenSSL::PKey::RSA.new
+            rsa_key.n = asn1_encoded_key.value[1].value
+            rsa_key.e = asn1_encoded_key.value[2].value
+            rsa_key.d = asn1_encoded_key.value[3].value
+            rsa_key.p = asn1_encoded_key.value[4].value
+            rsa_key.q = asn1_encoded_key.value[5].value
+            rsa_key.dmp1 = asn1_encoded_key.value[6].value
+            rsa_key.dmq1 = asn1_encoded_key.value[7].value
+            rsa_key.iqmp = asn1_encoded_key.value[8].value
+
+            rsa_key
+        end
+
         # TODO: Fake some data and make a test
         def self.parse_SHAR chunk, encryption_key
             StringIO.open chunk.payload do |io|
