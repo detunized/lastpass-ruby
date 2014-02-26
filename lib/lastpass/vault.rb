@@ -35,6 +35,7 @@ module LastPass
             Parser.extract_chunks(blob).each do |i|
                 case i.id
                 when "ACCT"
+                    # TODO: Put shared folder name as group in the account
                     @accounts.push Parser.parse_ACCT i, key
                 when "PRIK"
                     rsa_private_key = Parser.parse_PRIK i, encryption_key
