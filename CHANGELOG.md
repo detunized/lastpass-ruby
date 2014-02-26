@@ -1,3 +1,9 @@
+Version 1.1.0
+-------------
+
+- Shared folder support
+
+
 Version 1.0.1
 -------------
 
