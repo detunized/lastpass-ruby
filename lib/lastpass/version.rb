@@ -2,5 +2,5 @@
 # Licensed under the terms of the MIT license. See LICENCE for details.
 
 module LastPass
-    VERSION = "1.0.1"
+    VERSION = "1.1.0"
 end
