@@ -187,7 +187,7 @@ describe LastPass::Parser do
 
     describe ".read_chunk" do
         it "returns a chunk" do
-            with_hex "4142434400000004DEADBEEF" + padding do |io|
+            with_chunk_hex "ABCD", "DEADBEEF", padding do |io|
                 expect(LastPass::Parser.read_chunk io).to eq LastPass::Chunk.new("ABCD", "DEADBEEF".decode_hex)
                 expect(io.pos).to eq 12
             end
@@ -429,6 +429,26 @@ describe LastPass::Parser do
         StringIO.open bytes do |io|
             yield io
         end
+    end
+
+    #
+    # Chunks
+    #
+
+    def with_chunk id, payload, padding = "", &block
+        with_bytes make_chunk(id, payload, padding), &block
+    end
+
+    def with_chunk_hex id, payload, padding = "", &block
+        with_bytes make_chunk_hex(id, payload, padding), &block
+    end
+
+    def make_chunk id, payload, padding = ""
+        [id, payload.size, payload, padding].pack "a4Na*a*"
+    end
+
+    def make_chunk_hex id, payload, padding = ""
+        make_chunk id, payload.decode_hex, padding
     end
 
     #
