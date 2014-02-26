@@ -196,7 +196,7 @@ describe LastPass::Parser do
 
     describe ".read_item" do
         it "returns an item" do
-            with_hex "00000004DEADBEEF" + padding do |io|
+            with_item_hex "DEADBEEF", padding do |io|
                 expect(LastPass::Parser.read_item io).to eq "DEADBEEF".decode_hex
                 expect(io.pos).to eq 8
             end
@@ -205,14 +205,14 @@ describe LastPass::Parser do
 
     describe ".skip_item" do
         it "skips an empty item" do
-            with_hex "00000000" + padding do |io|
+            with_item_hex "", padding do |io|
                 LastPass::Parser.skip_item io
                 expect(io.pos).to eq 4
             end
         end
 
         it "skips a non-empty item" do
-            with_hex "00000004DEADBEEF" + padding do |io|
+            with_item_hex "DEADBEEF", padding do |io|
                 LastPass::Parser.skip_item io
                 expect(io.pos).to eq 8
             end
@@ -429,5 +429,25 @@ describe LastPass::Parser do
         StringIO.open bytes do |io|
             yield io
         end
+    end
+
+    #
+    # Items
+    #
+
+    def with_item payload, padding = "", &block
+        with_bytes make_item(payload, padding), &block
+    end
+
+    def with_item_hex payload, padding = "", &block
+        with_bytes make_item_hex(payload, padding), &block
+    end
+
+    def make_item payload, padding = ""
+        [payload.size, payload, padding].pack "Na*a*"
+    end
+
+    def make_item_hex payload, padding = ""
+        make_item payload.decode_hex, padding
     end
 end
