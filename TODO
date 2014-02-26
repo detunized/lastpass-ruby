@@ -1,0 +1,5 @@
+- Make tests more consistent. Currently there's a lot of different binary blobs stored in the tests.
+It would be good to generate the test data from some meaningful pieces. Like construct chunks from
+items, construct items themselves. Build the whole blob out of chunks. This way the tests would be
+more readable and easier to update in case of format changes. This also fixes the problem of
+exposing real world usernames, passwords and encryption keys.
