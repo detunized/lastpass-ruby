@@ -32,9 +32,16 @@ vault.accounts.each do |i|
 end
 ```
 
+
+A multifactor password (YubiKey, Google Authenticator) can optionally be appended to 
+the login credentials:
+
+```ruby
+vault = LastPass::Vault.open_remote "username", "password", "multifactor_password"
+```
+
 The blob received from LastPass could be safely stored locally (it's well
 encrypted) and reused later on.
-
 
 LostPass iOS App
 ----------------
