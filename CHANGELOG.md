@@ -1,3 +1,9 @@
+Version 1.2.0
+-------------
+
+- Server secure note support
+
+
 Version 1.1.0
 -------------
 
