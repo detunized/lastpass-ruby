@@ -36,7 +36,10 @@ module LastPass
                 case i.id
                 when "ACCT"
                     # TODO: Put shared folder name as group in the account
-                    @accounts.push Parser.parse_ACCT i, key
+                    account = Parser.parse_ACCT i, key
+                    if account
+                        @accounts << account
+                    end
                 when "PRIK"
                     rsa_private_key = Parser.parse_PRIK i, encryption_key
                 when "SHAR"

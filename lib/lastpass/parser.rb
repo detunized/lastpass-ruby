@@ -20,15 +20,36 @@ module LastPass
         end
 
         # Parses an account chunk, decrypts and creates an Account object.
+        # May return nil when the chunk does not represent an account.
+        # All secure notes are ACCTs but not all of them strore account
+        # information.
+        #
+        # TODO: Make a test case that covers secure note account
         def self.parse_ACCT chunk, encryption_key
             StringIO.open chunk.payload do |io|
                 id = read_item io
                 name = decode_aes256_auto read_item(io), encryption_key
                 group = decode_aes256_auto read_item(io), encryption_key
                 url = decode_hex read_item io
-                3.times { skip_item io }
+                notes = decode_aes256_auto read_item(io), encryption_key
+                2.times { skip_item io }
                 username = decode_aes256_auto read_item(io), encryption_key
                 password = decode_aes256_auto read_item(io), encryption_key
+                2.times { skip_item io }
+                secure_note = read_item io
+
+                # Parse secure note
+                if secure_note == "1"
+                    17.times { skip_item io }
+                    secure_note_type = read_item io
+
+                    # Only "Server" secure note stores account information
+                    if secure_note_type != "Server"
+                        return nil
+                    end
+
+                    url, username, password = parse_secure_note_server notes
+                end
 
                 Account.new id, name, username, password, url, group
             end
@@ -82,6 +103,26 @@ module LastPass
                 # TODO: Return an object, not a hash
                 {id: id, name: name, encryption_key: key}
             end
+        end
+
+        def self.parse_secure_note_server notes
+            url = nil
+            username = nil
+            password = nil
+
+            notes.split("\n").each do |i|
+                key, value = i.split ":", 2
+                case key
+                when "Hostname"
+                    url = value
+                when "Username"
+                    username = value
+                when "Password"
+                    password = value
+                end
+            end
+
+            [url, username, password]
         end
 
         # Reads one chunk from a stream and creates a Chunk object with the data read.

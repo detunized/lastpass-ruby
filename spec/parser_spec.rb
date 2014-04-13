@@ -185,6 +185,20 @@ describe LastPass::Parser do
         end
     end
 
+    describe ".parse_secure_note_server" do
+        let(:url) { "url" }
+        let(:username) { "username" }
+        let(:password) { "password" }
+        let(:notes) { "Hostname:#{url}\nUsername:#{username}\nPassword:#{password}" }
+
+        it "returns parsed values" do
+            result = LastPass::Parser.parse_secure_note_server notes
+            expect(result[0]).to eq url
+            expect(result[1]).to eq username
+            expect(result[2]).to eq password
+        end
+    end
+
     describe ".read_chunk" do
         it "returns a chunk" do
             with_chunk_hex "ABCD", "DEADBEEF", padding do |io|
