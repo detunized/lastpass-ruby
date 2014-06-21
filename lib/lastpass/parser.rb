@@ -36,13 +36,13 @@ module LastPass
         def self.parse_ACCT chunk, encryption_key
             StringIO.open chunk.payload do |io|
                 id = read_item io
-                name = decode_aes256_auto read_item(io), encryption_key
-                group = decode_aes256_auto read_item(io), encryption_key
+                name = decode_aes256_plain_auto read_item(io), encryption_key
+                group = decode_aes256_plain_auto read_item(io), encryption_key
                 url = decode_hex read_item io
-                notes = decode_aes256_auto read_item(io), encryption_key
+                notes = decode_aes256_plain_auto read_item(io), encryption_key
                 2.times { skip_item io }
-                username = decode_aes256_auto read_item(io), encryption_key
-                password = decode_aes256_auto read_item(io), encryption_key
+                username = decode_aes256_plain_auto read_item(io), encryption_key
+                password = decode_aes256_plain_auto read_item(io), encryption_key
                 2.times { skip_item io }
                 secure_note = read_item io
 
@@ -102,10 +102,10 @@ module LastPass
                 key = if key.empty?
                     decode_hex rsa_key.private_decrypt(encrypted_key, RSA_PKCS1_OAEP_PADDING)
                 else
-                    decode_hex decode_aes256_auto(key, encryption_key)
+                    decode_hex decode_aes256_plain_auto(key, encryption_key)
                 end
 
-                name = decode_aes256_auto encrypted_name, key
+                name = decode_aes256_base64_auto encrypted_name, key
 
                 # TODO: Return an object, not a hash
                 {id: id, name: name, encryption_key: key}
@@ -196,27 +196,29 @@ module LastPass
             Base64.decode64 data
         end
 
-        # Guesses AES encoding/cipher from the length of the data.
-        # Possible combinations are:
-        #   - ciphers: AES-256 EBC, AES-256 CBC
-        #   - encodings: plain, base64
-        def self.decode_aes256_auto data, encryption_key
+        # Guesses AES cipher (EBC or CBD) from the length of the plain data.
+        def self.decode_aes256_plain_auto data, encryption_key
             length = data.length
-            length16 = length % 16
-            length64 = length % 64
 
             if length == 0
                 ""
-            elsif length16 == 0
-                decode_aes256_ecb_plain data, encryption_key
-            elsif length64 == 0 || length64 == 24 || length64 == 44
-                decode_aes256_ecb_base64 data, encryption_key
-            elsif length16 == 1
+            elsif data[0] == "!" && length % 16 == 1 && length > 32
                 decode_aes256_cbc_plain data, encryption_key
-            elsif length64 == 6 || length64 == 26 || length64 == 50
+            else
+                decode_aes256_ecb_plain data, encryption_key
+            end
+        end
+
+        # Guesses AES cipher (EBC or CBD) from the length of the base64 encoded data.
+        def self.decode_aes256_base64_auto data, encryption_key
+            length = data.length
+
+            if length == 0
+                ""
+            elsif data[0] == "!"
                 decode_aes256_cbc_base64 data, encryption_key
             else
-                raise RuntimeError, "'#{data.inspect}' doesn't seem to be AES-256 encrypted"
+                decode_aes256_ecb_base64 data, encryption_key
             end
         end
 

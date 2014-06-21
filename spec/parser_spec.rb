@@ -316,9 +316,9 @@ describe LastPass::Parser do
         end
     end
 
-    describe ".decode_aes256_auto" do
+    describe ".decode_aes256_plain_auto" do
         def check encoded, decoded
-            expect(LastPass::Parser.decode_aes256_auto encoded, encryption_key)
+            expect(LastPass::Parser.decode_aes256_plain_auto encoded, encryption_key)
                 .to eq decoded
         end
 
@@ -331,13 +331,24 @@ describe LastPass::Parser do
                    "All your base are belong to us"
         end
 
-        it "decodes ECB/base64 string" do
-            check "BNhd3Q3ZVODxk9c0C788NUPTIfYnZuxXfkghtMJ8jVM=",
-                   "All your base are belong to us"
-        end
-
         it "decodes CBC/plain string" do
             check "IcokDWmjOkKtLpZehWKL6666Uj6fNXPpX6lLWlou+1Lrwb+D3ymP6BAwd6C0TB3hSA==".decode64,
+                   "All your base are belong to us"
+        end
+    end
+
+    describe ".decode_aes256_base64_auto" do
+        def check encoded, decoded
+            expect(LastPass::Parser.decode_aes256_base64_auto encoded, encryption_key)
+                .to eq decoded
+        end
+
+        it "decodes a blank string" do
+            check "", ""
+        end
+
+        it "decodes ECB/base64 string" do
+            check "BNhd3Q3ZVODxk9c0C788NUPTIfYnZuxXfkghtMJ8jVM=",
                    "All your base are belong to us"
         end
 
