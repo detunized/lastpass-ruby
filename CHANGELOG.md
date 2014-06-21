@@ -1,3 +1,8 @@
+Version 1.2.1
+-------------
+
+- Fixed the decryption bug on long shared folder names.
+
 Version 1.2.0
 -------------
 
