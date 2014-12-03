@@ -33,7 +33,7 @@ end
 ```
 
 
-A multifactor password (YubiKey, Google Authenticator) can optionally be appended to 
+A multifactor password (YubiKey, Google Authenticator) can optionally be appended to
 the login credentials:
 
 ```ruby
@@ -59,6 +59,12 @@ Contributing
 
 Contribution in any form and shape is very welcome.  Have comments,
 suggestions, patches, pull requests?  All of the above are welcome.
+
+
+Thanks
+------
+
+ - [Chris D'Ambrosio](https://github.com/chrisdambrosio) for adding proxy support
 
 
 License
