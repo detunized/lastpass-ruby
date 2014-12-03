@@ -9,6 +9,7 @@ end
 
 require "base64"
 require "lastpass"
+require "rspec/its"
 
 class String
     def decode64

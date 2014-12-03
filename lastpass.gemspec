@@ -20,7 +20,8 @@ Gem::Specification.new do |s|
     s.add_dependency "pbkdf2-ruby", "~> 0.2.0"
 
     s.add_development_dependency "rake", "~> 10.4.0"
-    s.add_development_dependency "rspec", "~> 2.14.0"
+    s.add_development_dependency "rspec", "~> 3.1.0"
+    s.add_development_dependency "rspec-its", "~> 1.1.0"
     s.add_development_dependency "coveralls", "~> 0.7.0"
 
     s.files         = `git ls-files`.split "\n"

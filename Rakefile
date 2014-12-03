@@ -7,7 +7,7 @@ task :default => :spec
 
 # Spec
 RSpec::Core::RakeTask.new :spec do |task|
-    task.rspec_opts = "--format nested --color"
+    task.rspec_opts = "--format documentation --color"
 end
 
 # Example
