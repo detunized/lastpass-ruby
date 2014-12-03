@@ -8,7 +8,7 @@ module LastPass
             request_login username, password, key_iteration_count, multifactor_password
         end
 
-        def self.fetch session, web_client = HTTParty
+        def self.fetch session, web_client = http
             response = web_client.get "https://lastpass.com/getaccts.php?mobile=1&b64=1&hash=0.0&hasplugin=3.0.23&requestsrc=android",
                                       format: :plain,
                                       cookies: {"PHPSESSID" => URI.encode(session.id)}
@@ -18,7 +18,7 @@ module LastPass
             Blob.new decode_blob(response.parsed_response), session.key_iteration_count
         end
 
-        def self.request_iteration_count username, web_client = HTTParty
+        def self.request_iteration_count username, web_client = http
             response = web_client.post "https://lastpass.com/iterations.php",
                                        query: {email: username}
 
@@ -39,7 +39,7 @@ module LastPass
                                password,
                                key_iteration_count,
                                multifactor_password = nil,
-                               web_client = HTTParty
+                               web_client = http
 
             body = {
                 method: "mobile",
@@ -129,6 +129,14 @@ module LastPass
                          key_length: 32)
                     .hex_string
             end
+        end
+
+        def self.http
+          @http ||= HTTP
+        end
+
+        def self.http= client
+          @http = client
         end
 
         # Can't instantiate Fetcher
