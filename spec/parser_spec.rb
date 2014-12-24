@@ -186,16 +186,17 @@ describe LastPass::Parser do
     end
 
     describe ".parse_secure_note_server" do
+        let(:type) { "type"}
         let(:url) { "url" }
         let(:username) { "username" }
         let(:password) { "password" }
-        let(:notes) { "Hostname:#{url}\nUsername:#{username}\nPassword:#{password}" }
+        let(:notes) { "NoteType:#{type}\nHostname:#{url}\nUsername:#{username}\nPassword:#{password}" }
 
         it "returns parsed values" do
             result = LastPass::Parser.parse_secure_note_server notes
-            expect(result[0]).to eq url
-            expect(result[1]).to eq username
-            expect(result[2]).to eq password
+
+            expect(result).to be_instance_of Hash
+            expect(result).to eq(type: type, url: url, username: username, password: password)
         end
     end
 

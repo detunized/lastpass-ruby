@@ -48,14 +48,14 @@ module LastPass
 
                 # Parse secure note
                 if secure_note == "1"
-                    17.times { skip_item io }
-                    secure_note_type = read_item io
-
-                    if !ALLOWED_SECURE_NOTE_TYPES.key? secure_note_type
+                    parsed = parse_secure_note_server notes
+                    if !ALLOWED_SECURE_NOTE_TYPES.key? parsed[:type]
                         return nil
                     end
 
-                    url, username, password = parse_secure_note_server notes
+                    url = parsed[:url] if parsed.key? :url
+                    username = parsed[:username] if parsed.key? :username
+                    password = parsed[:password] if parsed.key? :password
                 end
 
                 Account.new id, name, username, password, url, group
@@ -113,23 +113,23 @@ module LastPass
         end
 
         def self.parse_secure_note_server notes
-            url = nil
-            username = nil
-            password = nil
+            info = {}
 
             notes.split("\n").each do |i|
                 key, value = i.split ":", 2
                 case key
+                when "NoteType"
+                    info[:type] = value
                 when "Hostname"
-                    url = value
+                    info[:url] = value
                 when "Username"
-                    username = value
+                    info[:username] = value
                 when "Password"
-                    password = value
+                    info[:password] = value
                 end
             end
 
-            [url, username, password]
+            info
         end
 
         # Reads one chunk from a stream and creates a Chunk object with the data read.
