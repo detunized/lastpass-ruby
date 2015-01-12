@@ -27,18 +27,31 @@ module LastPass
 
         # This more of an internal method, use one of the static constructors instead
         def initialize blob, encryption_key
-            @accounts = []
+            chunks = Parser.extract_chunks blob
+            if !complete? chunks
+                raise InvalidResponseError, "Blob is truncated"
+            end
+
+            @accounts = parse_accounts chunks, encryption_key
+        end
+
+        def complete? chunks
+            !chunks.empty? && chunks.last.id == "ENDM" && chunks.last.payload == "OK"
+        end
+
+        def parse_accounts chunks, encryption_key
+            accounts = []
 
             key = encryption_key
             rsa_private_key = nil
 
-            Parser.extract_chunks(blob).each do |i|
+            chunks.each do |i|
                 case i.id
                 when "ACCT"
                     # TODO: Put shared folder name as group in the account
                     account = Parser.parse_ACCT i, key
                     if account
-                        @accounts << account
+                        accounts << account
                     end
                 when "PRIK"
                     rsa_private_key = Parser.parse_PRIK i, encryption_key
@@ -47,6 +60,8 @@ module LastPass
                     key = Parser.parse_SHAR(i, encryption_key, rsa_private_key)[:encryption_key]
                 end
             end
+
+            accounts
         end
     end
 end

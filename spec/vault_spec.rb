@@ -10,6 +10,18 @@ describe LastPass::Vault do
                             TEST_ENCRYPTION_KEY
     }
 
+    describe ".new" do
+        it "raises an exception on trucated blob" do
+            [1, 10, 100, 1000].each do |i|
+                expect {
+                    blob = TEST_BLOB[0..(-1 - i)]
+                    LastPass::Vault.new LastPass::Blob.new(blob, TEST_KEY_ITERATION_COUNT),
+                                        TEST_ENCRYPTION_KEY
+                }.to raise_error LastPass::InvalidResponseError, "Blob is truncated"
+            end
+        end
+    end
+
     describe "#accounts" do
         context "returned accounts" do
             it { expect(vault.accounts).to be_instance_of Array }
