@@ -12,7 +12,7 @@ describe LastPass::Vault do
 
     describe ".new" do
         it "raises an exception on trucated blob" do
-            [1, 10, 100, 1000].each do |i|
+            [1, 2, 3, 4, 5, 10, 100, 1000].each do |i|
                 expect {
                     blob = TEST_BLOB[0..(-1 - i)]
                     LastPass::Vault.new LastPass::Blob.new(blob, TEST_KEY_ITERATION_COUNT),
