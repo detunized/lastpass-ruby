@@ -23,10 +23,13 @@ describe LastPass::Fetcher do
                              hash: hash,
                              iterations: key_iteration_count} }
 
+    let(:device_id) { "492378378052455" }
+    let(:login_post_data_with_device_id) { login_post_data.merge({imei: device_id}) }
+
     let(:google_authenticator_code) { "123456" }
     let(:yubikey_password) { "emdbwzemyisymdnevznyqhqnklaqheaxszzvtnxjrmkb" }
 
-    let(:login_post_data_with_google_authenticator_code) { login_post_data.merge({otp: google_authenticator_code})}
+    let(:login_post_data_with_google_authenticator_code) { login_post_data.merge({otp: google_authenticator_code}) }
     let(:login_post_data_with_yubikey_password) { login_post_data.merge({otp: yubikey_password}) }
 
     describe ".request_iteration_count" do
@@ -75,7 +78,7 @@ describe LastPass::Fetcher do
     end
 
     describe ".request_login" do
-        def verify_post_request multifactor_password, post_data
+        def verify_post_request multifactor_password, device_id, post_data
             web_client = double("web_client")
             expect(web_client).to receive(:post)
                 .with("https://lastpass.com/login.php", format: :xml, body: post_data)
@@ -85,19 +88,24 @@ describe LastPass::Fetcher do
                                             password,
                                             key_iteration_count,
                                             multifactor_password,
+                                            device_id,
                                             web_client
         end
 
         it "makes a POST request" do
-            verify_post_request nil, login_post_data
+            verify_post_request nil, nil, login_post_data
+        end
+
+        it "makes a POST request with device id" do
+            verify_post_request nil, device_id, login_post_data_with_device_id
         end
 
         it "makes a POST request with Google Authenticator code" do
-            verify_post_request google_authenticator_code, login_post_data_with_google_authenticator_code
+            verify_post_request google_authenticator_code, nil, login_post_data_with_google_authenticator_code
         end
 
         it "makes a POST request with Yubikey password" do
-            verify_post_request yubikey_password, login_post_data_with_yubikey_password
+            verify_post_request yubikey_password, nil, login_post_data_with_yubikey_password
         end
 
         it "returns a session" do
@@ -276,6 +284,7 @@ describe LastPass::Fetcher do
         LastPass::Fetcher.request_login username,
                                         password,
                                         key_iteration_count,
+                                        nil,
                                         nil,
                                         double("web_client", post: response)
     end

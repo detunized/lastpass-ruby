@@ -7,7 +7,8 @@ module LastPass
 
         # Fetches a blob from the server and creates a vault
         def self.open_remote username, password, multifactor_password = nil
-            open Vault.fetch_blob(username, password, multifactor_password), username, password
+            blob = Vault.fetch_blob username, password, multifactor_password
+            open blob, username, password
         end
 
         # Creates a vault from a locally stored blob

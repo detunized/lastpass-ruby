@@ -5,7 +5,7 @@ module LastPass
     class Fetcher
         def self.login username, password, multifactor_password = nil
             key_iteration_count = request_iteration_count username
-            request_login username, password, key_iteration_count, multifactor_password
+            request_login username, password, key_iteration_count, multifactor_password, nil
         end
 
         def self.fetch session, web_client = http
@@ -39,6 +39,7 @@ module LastPass
                                password,
                                key_iteration_count,
                                multifactor_password = nil,
+                               client_id = nil,
                                web_client = http
 
             body = {
@@ -51,6 +52,7 @@ module LastPass
             }
 
             body[:otp] = multifactor_password if multifactor_password
+            body[:imei] = client_id if client_id
 
             response = web_client.post "https://lastpass.com/login.php",
                                        format: :xml,
