@@ -2,7 +2,7 @@
 # Licensed under the terms of the MIT license. See LICENCE for details.
 
 module LastPass
-  class HTTP
-    include HTTParty
-  end
+    class HTTP
+        include HTTParty
+    end
 end

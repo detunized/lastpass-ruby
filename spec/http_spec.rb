@@ -4,14 +4,22 @@
 require "spec_helper"
 
 describe LastPass::HTTP do
-  let(:http) { LastPass::HTTP }
+    let(:http) { LastPass::HTTP }
 
-  it 'can set the proxy options' do
-    http.http_proxy('proxy.fazbearentertainment.com', 1987, 'ffazbear', 'itsme')
-    options = http.instance_variable_get(:@default_options)
-    expect(options[:http_proxyaddr]).to eq('proxy.fazbearentertainment.com')
-    expect(options[:http_proxyport]).to eq(1987)
-    expect(options[:http_proxyuser]).to eq('ffazbear')
-    expect(options[:http_proxypass]).to eq('itsme')
-  end
+    describe "#http_proxy" do
+        let(:url) { "https://proxy.example.com" }
+        let(:port) { 12345 }
+        let(:username) { "username" }
+        let(:password) { "password" }
+
+        it "sets the proxy options" do
+            http.http_proxy url, port, username, password
+
+            options = http.instance_variable_get :@default_options
+            expect(options[:http_proxyaddr]).to eq url
+            expect(options[:http_proxyport]).to eq port
+            expect(options[:http_proxyuser]).to eq username
+            expect(options[:http_proxypass]).to eq password
+        end
+    end
 end
