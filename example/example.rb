@@ -7,6 +7,8 @@
 require "lastpass"
 require "yaml"
 
+DEVICE_ID = "example.rb"
+
 credentials = YAML.load_file File.join File.dirname(__FILE__), "credentials.yaml"
 
 username = credentials["username"]
@@ -14,21 +16,21 @@ password = credentials["password"]
 
 begin
     # First try without a multifactor password
-    vault = LastPass::Vault.open_remote username, password
+    vault = LastPass::Vault.open_remote username, password, nil, DEVICE_ID
 rescue LastPass::LastPassIncorrectGoogleAuthenticatorCodeError => e
     # Get the code
     puts "Enter Google Authenticator code:"
     multifactor_password = gets.chomp
 
     # And now retry with the code
-    vault = LastPass::Vault.open_remote username, password, multifactor_password
+    vault = LastPass::Vault.open_remote username, password, multifactor_password, DEVICE_ID
 rescue LastPass::LastPassIncorrectYubikeyPasswordError => e
     # Get the password
     puts "Enter Yubikey password:"
     multifactor_password = gets.chomp
 
     # And now retry with the Yubikey password
-    vault = LastPass::Vault.open_remote username, password, multifactor_password
+    vault = LastPass::Vault.open_remote username, password, multifactor_password, DEVICE_ID
 end
 
 vault.accounts.each_with_index do |i, index|
