@@ -6,8 +6,8 @@ module LastPass
         attr_reader :accounts
 
         # Fetches a blob from the server and creates a vault
-        def self.open_remote username, password, multifactor_password = nil
-            blob = Vault.fetch_blob username, password, multifactor_password
+        def self.open_remote username, password, multifactor_password = nil, client_id = nil
+            blob = Vault.fetch_blob username, password, multifactor_password, client_id
             open blob, username, password
         end
 
@@ -22,8 +22,8 @@ module LastPass
         end
 
         # Just fetches the blob, could be used to store it locally
-        def self.fetch_blob username, password, multifactor_password = nil
-            Fetcher.fetch Fetcher.login username, password, multifactor_password
+        def self.fetch_blob username, password, multifactor_password = nil, client_id = nil
+            Fetcher.fetch Fetcher.login username, password, multifactor_password, client_id
         end
 
         # This more of an internal method, use one of the static constructors instead

@@ -3,9 +3,9 @@
 
 module LastPass
     class Fetcher
-        def self.login username, password, multifactor_password = nil
+        def self.login username, password, multifactor_password = nil, client_id = nil
             key_iteration_count = request_iteration_count username
-            request_login username, password, key_iteration_count, multifactor_password, nil
+            request_login username, password, key_iteration_count, multifactor_password, client_id
         end
 
         def self.fetch session, web_client = http
