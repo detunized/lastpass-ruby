@@ -14,6 +14,7 @@ module LastPass
         # Creates a vault from a locally stored blob
         def self.open_local blob_filename, username, password
             # TODO: read the blob here
+            raise NotImplementedError
         end
 
         # Creates a vault from a blob object
