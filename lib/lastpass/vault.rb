@@ -23,7 +23,11 @@ module LastPass
 
         # Just fetches the blob, could be used to store it locally
         def self.fetch_blob username, password, multifactor_password = nil, client_id = nil
-            Fetcher.fetch Fetcher.login username, password, multifactor_password, client_id
+            session = Fetcher.login username, password, multifactor_password, client_id
+            blob = Fetcher.fetch session
+            Fetcher.logout session
+
+            blob
         end
 
         # This more of an internal method, use one of the static constructors instead
