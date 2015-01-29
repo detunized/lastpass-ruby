@@ -1,3 +1,11 @@
+Version 1.4.0
+-------------
+
+- Added device id (IMEI/UUID) support
+- Log out after fetching the blob to close the newly open session on LP server to prevent triggering anti-hacking logic (hopefully)
+- Verify that the recieved blob is marked with ENDM chunk and hasn't been truncated in the process
+
+
 Version 1.3.0
 -------------
 
