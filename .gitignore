@@ -1,4 +1,4 @@
-Gemfile.lock
-lastpass-*.gem
-coverage
-example/credentials.yaml
+/pkg/
+/Gemfile.lock
+/coverage
+/example/credentials.yaml

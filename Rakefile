@@ -1,6 +1,7 @@
 # Copyright (C) 2013 Dmitry Yakimenko (detunized@gmail.com).
 # Licensed under the terms of the MIT license. See LICENCE for details.
 
+require "bundler/gem_tasks"
 require "rspec/core/rake_task"
 
 task :default => :spec
