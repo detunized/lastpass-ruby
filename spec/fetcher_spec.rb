@@ -32,6 +32,22 @@ describe LastPass::Fetcher do
     let(:login_post_data_with_google_authenticator_code) { login_post_data.merge({otp: google_authenticator_code}) }
     let(:login_post_data_with_yubikey_password) { login_post_data.merge({otp: yubikey_password}) }
 
+    describe ".logout" do
+        it "makes a GET request" do
+            web_client = double "web_client"
+            expect(web_client).to receive(:get)
+                .with("https://lastpass.com/logout.php?mobile=1", cookies: {"PHPSESSID" => session_id})
+                .and_return(http_ok "")
+            LastPass::Fetcher.logout session, web_client
+        end
+
+        it "raises an exception on HTTP error" do
+            expect {
+                LastPass::Fetcher.logout session, double("web_client", get: http_error)
+            }.to raise_error LastPass::NetworkError
+        end
+    end
+
     describe ".request_iteration_count" do
         it "makes a POST request" do
             expect(web_client = double("web_client")).to receive(:post)

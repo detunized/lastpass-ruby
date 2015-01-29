@@ -8,6 +8,13 @@ module LastPass
             request_login username, password, key_iteration_count, multifactor_password, client_id
         end
 
+        def self.logout session, web_client = http
+            response = web_client.get "https://lastpass.com/logout.php?mobile=1",
+                                      cookies: {"PHPSESSID" => URI.encode(session.id)}
+
+            raise NetworkError unless response.response.is_a? Net::HTTPOK
+        end
+
         def self.fetch session, web_client = http
             response = web_client.get "https://lastpass.com/getaccts.php?mobile=1&b64=1&hash=0.0&hasplugin=3.0.23&requestsrc=android",
                                       format: :plain,
