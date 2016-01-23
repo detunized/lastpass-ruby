@@ -1,10 +1,10 @@
 LastPass Ruby API
 =================
 
-[![Build Status](https://travis-ci.org/detunized/lastpass-ruby.png?branch=master)](https://travis-ci.org/detunized/lastpass-ruby)
-[![Coverage Status](https://coveralls.io/repos/detunized/lastpass-ruby/badge.png?branch=master)](https://coveralls.io/r/detunized/lastpass-ruby?branch=master)
-[![Code Climate](https://codeclimate.com/github/detunized/lastpass-ruby.png)](https://codeclimate.com/github/detunized/lastpass-ruby)
-[![Dependency Status](https://gemnasium.com/detunized/lastpass-ruby.png)](https://gemnasium.com/detunized/lastpass-ruby)
+[![Build Status](https://travis-ci.org/detunized/lastpass-ruby.svg?branch=master)](https://travis-ci.org/detunized/lastpass-ruby)
+[![Coverage Status](https://coveralls.io/repos/detunized/lastpass-ruby/badge.svg?branch=master)](https://coveralls.io/r/detunized/lastpass-ruby?branch=master)
+[![Code Climate](https://codeclimate.com/github/detunized/lastpass-ruby.svg)](https://codeclimate.com/github/detunized/lastpass-ruby)
+[![Dependency Status](https://gemnasium.com/detunized/lastpass-ruby.svg)](https://gemnasium.com/detunized/lastpass-ruby)
 
 **This is unofficial LastPass API.**
 
