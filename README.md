@@ -8,7 +8,7 @@ LastPass Ruby API
 
 **This is unofficial LastPass API.**
 
-There's also [C#/.NET port](https://github.com/detunized/lastpass-sharp) available.
+There are also [a C#/.NET port](https://github.com/detunized/lastpass-sharp) and [a Python port](https://github.com/konomae/lastpass-python) available.
 
 This library implements fetching and parsing of LastPass data.  The library is
 still in the proof of concept stage and doesn't support all LastPass features
