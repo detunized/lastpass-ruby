@@ -117,13 +117,7 @@ module LastPass
             if key_iteration_count == 1
                 Digest::SHA256.digest username + password
             else
-                PBKDF2
-                    .new(password: password,
-                         salt: username,
-                         iterations: key_iteration_count,
-                         key_length: 32)
-                    .bin_string
-                    .force_encoding "BINARY"
+                OpenSSL::PKCS5.pbkdf2_hmac password, username, key_iteration_count, 32, "sha256"
             end
         end
 
@@ -131,12 +125,11 @@ module LastPass
             if key_iteration_count == 1
                 Digest::SHA256.hexdigest Digest.hexencode(make_key(username, password, 1)) + password
             else
-                PBKDF2
-                    .new(password: make_key(username, password, key_iteration_count),
-                         salt: password,
-                         iterations: 1,
-                         key_length: 32)
-                    .hex_string
+                Digest.hexencode OpenSSL::PKCS5.pbkdf2_hmac make_key(username, password, key_iteration_count),
+                                                            password,
+                                                            1,
+                                                            32,
+                                                            "sha256"
             end
         end
 

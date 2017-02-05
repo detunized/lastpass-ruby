@@ -14,10 +14,9 @@ Gem::Specification.new do |s|
     s.summary     = "Unofficial LastPass API"
     s.description = "Unofficial LastPass API"
 
-    s.required_ruby_version = ">= 1.9.3"
+    s.required_ruby_version = ">= 2.0.0"
 
-    s.add_dependency "httparty", "~> 0.13.0"
-    s.add_dependency "pbkdf2-ruby", "~> 0.2.0"
+    s.add_dependency "httparty", "~> 0.14.0"
 
     s.add_development_dependency "rake", "~> 10.4.0"
     s.add_development_dependency "rspec", "~> 3.1.0"

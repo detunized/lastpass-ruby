@@ -4,7 +4,6 @@
 require "base64"
 require "httparty"
 require "openssl"
-require "pbkdf2"
 require "stringio"
 
 require "lastpass/account"
