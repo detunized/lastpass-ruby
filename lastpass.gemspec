@@ -18,10 +18,10 @@ Gem::Specification.new do |s|
 
     s.add_dependency "httparty", "~> 0.14.0"
 
-    s.add_development_dependency "rake", "~> 10.4.0"
-    s.add_development_dependency "rspec", "~> 3.1.0"
-    s.add_development_dependency "rspec-its", "~> 1.1.0"
-    s.add_development_dependency "coveralls", "~> 0.7.0"
+    s.add_development_dependency "rake", "~> 12.0.0"
+    s.add_development_dependency "rspec", "~> 3.5.0"
+    s.add_development_dependency "rspec-its", "~> 1.2.0"
+    s.add_development_dependency "coveralls", "~> 0.8.19"
 
     s.files         = `git ls-files`.split "\n"
     s.test_files    = `git ls-files spec`.split "\n"
