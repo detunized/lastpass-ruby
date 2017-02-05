@@ -12,15 +12,15 @@ Gem::Specification.new do |s|
     s.email       = "detunized@gmail.com"
     s.homepage    = "https://github.com/detunized/lastpass-ruby"
     s.summary     = "Unofficial LastPass API"
-    s.description = "Unofficial LastPass API"
+    s.description = "Read only access to the online LastPass vault"
 
     s.required_ruby_version = ">= 2.0.0"
 
     s.add_dependency "httparty", "~> 0.14.0"
 
-    s.add_development_dependency "rake", "~> 12.0.0"
-    s.add_development_dependency "rspec", "~> 3.5.0"
-    s.add_development_dependency "rspec-its", "~> 1.2.0"
+    s.add_development_dependency "rake", "~> 12.0"
+    s.add_development_dependency "rspec", "~> 3.5"
+    s.add_development_dependency "rspec-its", "~> 1.2"
     s.add_development_dependency "coveralls", "~> 0.8.19"
 
     s.files         = `git ls-files`.split "\n"
