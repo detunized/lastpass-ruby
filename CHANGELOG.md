@@ -1,3 +1,12 @@
+Version 1.5.0
+-------------
+
+- Fixed failing `get_iteraction_count`. POST parameters are moved from the query (URL) to the body.
+- pbkdf2-ruby gem is no longer used as it was causing problems. Relying on built-in `OpenSSL::PKCS5.pbkdf2_hmac`
+- Minimum supported Ruby version is 2.0.0
+- Dependencies updated to their laters versions
+- Travis CI fixed
+
 Version 1.4.0
 -------------
 
