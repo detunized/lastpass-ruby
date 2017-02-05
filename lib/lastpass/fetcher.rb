@@ -27,7 +27,7 @@ module LastPass
 
         def self.request_iteration_count username, web_client = http
             response = web_client.post "https://lastpass.com/iterations.php",
-                                       query: {email: username}
+                                       body: {email: username}
 
             raise NetworkError unless response.response.is_a? Net::HTTPOK
 

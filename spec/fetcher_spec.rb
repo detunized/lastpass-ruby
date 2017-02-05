@@ -51,7 +51,7 @@ describe LastPass::Fetcher do
     describe ".request_iteration_count" do
         it "makes a POST request" do
             expect(web_client = double("web_client")).to receive(:post)
-                .with("https://lastpass.com/iterations.php", query: {email: username})
+                .with("https://lastpass.com/iterations.php", body: {email: username})
                 .and_return(http_ok(key_iteration_count.to_s))
 
             LastPass::Fetcher.request_iteration_count username, web_client
