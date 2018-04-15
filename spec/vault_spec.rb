@@ -6,7 +6,7 @@ require "test_data"
 
 describe LastPass::Vault do
     let(:vault) {
-        LastPass::Vault.new LastPass::Blob.new(TEST_BLOB, TEST_KEY_ITERATION_COUNT),
+        LastPass::Vault.new LastPass::Blob.new(TEST_BLOB, TEST_KEY_ITERATION_COUNT, nil),
                             TEST_ENCRYPTION_KEY
     }
 
@@ -15,7 +15,7 @@ describe LastPass::Vault do
             [1, 2, 3, 4, 5, 10, 100, 1000].each do |i|
                 expect {
                     blob = TEST_BLOB[0..(-1 - i)]
-                    LastPass::Vault.new LastPass::Blob.new(blob, TEST_KEY_ITERATION_COUNT),
+                    LastPass::Vault.new LastPass::Blob.new(blob, TEST_KEY_ITERATION_COUNT, nil),
                                         TEST_ENCRYPTION_KEY
                 }.to raise_error LastPass::InvalidResponseError, "Blob is truncated"
             end

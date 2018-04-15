@@ -22,7 +22,9 @@ module LastPass
 
             raise NetworkError unless response.response.is_a? Net::HTTPOK
 
-            Blob.new decode_blob(response.parsed_response), session.key_iteration_count
+            Blob.new decode_blob(response.parsed_response),
+                     session.key_iteration_count,
+                     session.encrypted_private_key
         end
 
         def self.request_iteration_count username, web_client = http
@@ -55,7 +57,8 @@ module LastPass
                 xml: 1,
                 username: username,
                 hash: make_hash(username, password, key_iteration_count),
-                iterations: key_iteration_count
+                iterations: key_iteration_count,
+                includeprivatekeyenc: 1
             }
 
             body[:otp] = multifactor_password if multifactor_password
@@ -79,7 +82,7 @@ module LastPass
             if ok.is_a? Hash
                 session_id = ok["sessionid"]
                 if session_id.is_a? String
-                    return Session.new session_id, key_iteration_count
+                    return Session.new session_id, key_iteration_count, ok["privatekeyenc"]
                 end
             end
 

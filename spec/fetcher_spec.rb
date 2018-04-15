@@ -10,18 +10,19 @@ describe LastPass::Fetcher do
 
     let(:hash) { "7880a04588cfab954aa1a2da98fd9c0d2c6eba4c53e36a94510e6dbf30759256" }
     let(:session_id) { "53ru,Hb713QnEVM5zWZ16jMvxS0" }
-    let(:session) { LastPass::Session.new session_id, key_iteration_count }
+    let(:session) { LastPass::Session.new session_id, key_iteration_count, "DEADBEEF" }
 
     let(:blob_response) { "TFBBVgAAAAMxMjJQUkVNAAAACjE0MTQ5" }
     let(:blob_bytes) { blob_response.decode64 }
-    let(:blob) { LastPass::Blob.new blob_bytes, key_iteration_count }
+    let(:blob) { LastPass::Blob.new blob_bytes, key_iteration_count, "DEADBEEF" }
 
     let(:login_post_data) { {method: "mobile",
                              web: 1,
                              xml: 1,
                              username: username,
                              hash: hash,
-                             iterations: key_iteration_count} }
+                             iterations: key_iteration_count,
+                             includeprivatekeyenc: 1} }
 
     let(:device_id) { "492378378052455" }
     let(:login_post_data_with_device_id) { login_post_data.merge({imei: device_id}) }
@@ -98,7 +99,7 @@ describe LastPass::Fetcher do
             web_client = double("web_client")
             expect(web_client).to receive(:post)
                 .with("https://lastpass.com/login.php", format: :xml, body: post_data)
-                .and_return(http_ok("ok" => {"sessionid" => session_id}))
+                .and_return(http_ok("ok" => {"sessionid" => session_id, "privatekeyenc" => "DEADBEEF"}))
 
             LastPass::Fetcher.request_login username,
                                             password,

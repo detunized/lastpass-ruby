@@ -6,7 +6,7 @@ require_relative "test_data"
 
 describe LastPass::Parser do
     let(:key_iteration_count) { 5000 }
-    let(:blob) { LastPass::Blob.new TEST_BLOB, key_iteration_count }
+    let(:blob) { LastPass::Blob.new TEST_BLOB, key_iteration_count, "DEADBEEF" }
     let(:padding) { "BEEFFACE"}
     let(:encryption_key) { "OfOUvVnQzB4v49sNh4+PdwIFb9Fr5+jVfWRTf+E2Ghg=".decode64 }
     let(:encoded_rsa_key) { "98F3F5518AE7C03EBBF195A616361619033509FB1FFA0408E883B7C5E80381F8" +
@@ -114,9 +114,10 @@ describe LastPass::Parser do
         end
     end
 
-    describe ".parse_PRIK" do
-        let(:chunk) { LastPass::Chunk.new "PRIK", encoded_rsa_key }
-        let(:rsa_key) { LastPass::Parser.parse_PRIK chunk, rsa_key_encryption_key }
+    describe ".parse_private_key" do
+        let(:rsa_key) {
+            LastPass::Parser.parse_private_key encoded_rsa_key, rsa_key_encryption_key
+        }
 
         it "parses private key" do
             expect(rsa_key).to be_instance_of OpenSSL::PKey::RSA

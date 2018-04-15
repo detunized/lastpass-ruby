@@ -4,11 +4,13 @@
 module LastPass
     class Session
         attr_reader :id,
-                    :key_iteration_count
+                    :key_iteration_count,
+                    :encrypted_private_key
 
-        def initialize id, key_iteration_count
+        def initialize id, key_iteration_count, encrypted_private_key
             @id = id
             @key_iteration_count = key_iteration_count
+            @encrypted_private_key = encrypted_private_key
         end
     end
 end

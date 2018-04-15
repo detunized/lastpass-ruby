@@ -38,18 +38,21 @@ module LastPass
                 raise InvalidResponseError, "Blob is truncated"
             end
 
-            @accounts = parse_accounts chunks, encryption_key
+            private_key = nil
+            if blob.encrypted_private_key
+                private_key = Parser.parse_private_key blob.encrypted_private_key, encryption_key
+            end
+
+            @accounts = parse_accounts chunks, encryption_key, private_key
         end
 
         def complete? chunks
             !chunks.empty? && chunks.last.id == "ENDM" && chunks.last.payload == "OK"
         end
 
-        def parse_accounts chunks, encryption_key
+        def parse_accounts chunks, encryption_key, private_key
             accounts = []
-
             key = encryption_key
-            rsa_private_key = nil
 
             chunks.each do |i|
                 case i.id
@@ -59,11 +62,11 @@ module LastPass
                     if account
                         accounts << account
                     end
-                when "PRIK"
-                    rsa_private_key = Parser.parse_PRIK i, encryption_key
                 when "SHAR"
+                    raise "private_key must be provided" if !private_key
+
                     # After SHAR chunk all the folliwing accounts are enrypted with a new key
-                    key = Parser.parse_SHAR(i, encryption_key, rsa_private_key)[:encryption_key]
+                    key = Parser.parse_SHAR(i, encryption_key, private_key)[:encryption_key]
                 end
             end
 
