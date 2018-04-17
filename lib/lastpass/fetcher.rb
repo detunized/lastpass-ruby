@@ -82,7 +82,10 @@ module LastPass
             if ok.is_a? Hash
                 session_id = ok["sessionid"]
                 if session_id.is_a? String
-                    return Session.new session_id, key_iteration_count, ok["privatekeyenc"]
+                    private_key = ok["privatekeyenc"]
+                    private_key = nil if private_key == ""
+
+                    return Session.new session_id, key_iteration_count, private_key
                 end
             end
 
