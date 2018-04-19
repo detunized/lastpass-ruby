@@ -275,7 +275,7 @@ module LastPass
         # Allowed ciphers are: :ecb, :cbc.
         # If for :ecb iv is not used and should be set to "".
         def self.decode_aes256 cipher, iv, data, encryption_key
-            aes = OpenSSL::Cipher::Cipher.new "aes-256-#{cipher}"
+            aes = OpenSSL::Cipher.new "aes-256-#{cipher}"
             aes.decrypt
             aes.key = encryption_key
             aes.iv = iv
