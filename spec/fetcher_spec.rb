@@ -16,9 +16,8 @@ describe LastPass::Fetcher do
     let(:blob_bytes) { blob_response.decode64 }
     let(:blob) { LastPass::Blob.new blob_bytes, key_iteration_count, "DEADBEEF" }
 
-    let(:login_post_data) { {method: "mobile",
-                             web: 1,
-                             xml: 1,
+    let(:login_post_data) { {method: "cli",
+                             xml: 2,
                              username: username,
                              hash: hash,
                              iterations: key_iteration_count,
@@ -37,7 +36,7 @@ describe LastPass::Fetcher do
         it "makes a GET request" do
             web_client = double "web_client"
             expect(web_client).to receive(:get)
-                .with("https://lastpass.com/logout.php?mobile=1", cookies: {"PHPSESSID" => session_id})
+                .with("https://lastpass.com/logout.php?method=cli&noredirect=1", cookies: {"PHPSESSID" => session_id})
                 .and_return(http_ok "")
             LastPass::Fetcher.logout session, web_client
         end
@@ -99,7 +98,7 @@ describe LastPass::Fetcher do
             web_client = double("web_client")
             expect(web_client).to receive(:post)
                 .with("https://lastpass.com/login.php", format: :xml, body: post_data)
-                .and_return(http_ok("ok" => {"sessionid" => session_id, "privatekeyenc" => "DEADBEEF"}))
+                .and_return(http_ok("response" => {"ok" => {"sessionid" => session_id, "privatekeyenc" => "DEADBEEF"}}))
 
             LastPass::Fetcher.request_login username,
                                             password,
@@ -126,7 +125,7 @@ describe LastPass::Fetcher do
         end
 
         it "returns a session" do
-            expect(request_login_with_xml "<ok sessionid='#{session_id}' />").to eq session
+            expect(request_login_with_xml "<response><ok sessionid='#{session_id}' /></response>").to eq session
         end
 
         it "raises an exception on HTTP error" do
@@ -178,7 +177,7 @@ describe LastPass::Fetcher do
         it "raises an exception on missing/incorrect Yubikey password" do
             message = "Your account settings have restricted you from logging in " +
                       "from mobile devices that do not support YubiKey authentication."
-            expect { request_login_with_lastpass_error "yubikeyrestricted", message }
+            expect { request_login_with_lastpass_error "otprequired", message }
                 .to raise_error LastPass::LastPassIncorrectYubikeyPasswordError, message
         end
 
@@ -198,7 +197,7 @@ describe LastPass::Fetcher do
     describe ".fetch" do
         it "makes a GET request" do
             expect(web_client = double("web_client")).to receive(:get)
-                .with("https://lastpass.com/getaccts.php?mobile=1&b64=1&hash=0.0&hasplugin=3.0.23&requestsrc=android",
+                .with("https://lastpass.com/getaccts.php?mobile=1&b64=1&hash=0.0&hasplugin=3.0.23&requestsrc=cli",
                       format: :plain,
                       cookies: {"PHPSESSID" => session_id})
                 .and_return(http_ok(blob_response))

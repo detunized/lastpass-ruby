@@ -9,14 +9,14 @@ module LastPass
         end
 
         def self.logout session, web_client = http
-            response = web_client.get "https://lastpass.com/logout.php?mobile=1",
+            response = web_client.get "https://lastpass.com/logout.php?method=cli&noredirect=1",
                                       cookies: {"PHPSESSID" => URI.encode(session.id)}
 
             raise NetworkError unless response.response.is_a? Net::HTTPOK
         end
 
         def self.fetch session, web_client = http
-            response = web_client.get "https://lastpass.com/getaccts.php?mobile=1&b64=1&hash=0.0&hasplugin=3.0.23&requestsrc=android",
+            response = web_client.get "https://lastpass.com/getaccts.php?mobile=1&b64=1&hash=0.0&hasplugin=3.0.23&requestsrc=cli",
                                       format: :plain,
                                       cookies: {"PHPSESSID" => URI.encode(session.id)}
 
@@ -52,9 +52,8 @@ module LastPass
                                web_client = http
 
             body = {
-                method: "mobile",
-                web: 1,
-                xml: 1,
+                method: "cli",
+                xml: 2,
                 username: username,
                 hash: make_hash(username, password, key_iteration_count),
                 iterations: key_iteration_count,
@@ -78,7 +77,7 @@ module LastPass
         end
 
         def self.create_session parsed_response, key_iteration_count
-            ok = parsed_response["ok"]
+            ok = (parsed_response["response"] || {})["ok"]
             if ok.is_a? Hash
                 session_id = ok["sessionid"]
                 if session_id.is_a? String
@@ -101,7 +100,7 @@ module LastPass
                 "unknownpassword" => LastPassInvalidPasswordError,
                 "googleauthrequired" => LastPassIncorrectGoogleAuthenticatorCodeError,
                 "googleauthfailed" => LastPassIncorrectGoogleAuthenticatorCodeError,
-                "yubikeyrestricted" => LastPassIncorrectYubikeyPasswordError,
+                "otprequired" => LastPassIncorrectYubikeyPasswordError,
             }
 
             cause = error["cause"]
