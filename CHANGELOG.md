@@ -1,3 +1,10 @@
+Version 1.6.0
+-------------
+
+- Changed the way the private keys are parsed
+- OpenSSL 1.1.0 support
+- Bug fixes
+
 Version 1.5.0
 -------------
 
