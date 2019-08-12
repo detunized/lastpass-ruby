@@ -100,14 +100,25 @@ module LastPass
             asn1_encoded_key = OpenSSL::ASN1.decode asn1_encoded_all.value[2].value
 
             rsa_key = OpenSSL::PKey::RSA.new
-            rsa_key.n = asn1_encoded_key.value[1].value
-            rsa_key.e = asn1_encoded_key.value[2].value
-            rsa_key.d = asn1_encoded_key.value[3].value
-            rsa_key.p = asn1_encoded_key.value[4].value
-            rsa_key.q = asn1_encoded_key.value[5].value
-            rsa_key.dmp1 = asn1_encoded_key.value[6].value
-            rsa_key.dmq1 = asn1_encoded_key.value[7].value
-            rsa_key.iqmp = asn1_encoded_key.value[8].value
+            if rsa_key.respond_to? :set_key
+                rsa_key.set_key(asn1_encoded_key.value[1].value,
+                                asn1_encoded_key.value[2].value,
+                                asn1_encoded_key.value[3].value)
+                rsa_key.set_factors(asn1_encoded_key.value[4].value,
+                                    asn1_encoded_key.value[5].value)
+                rsa_key.set_crt_params(asn1_encoded_key.value[6].value,
+                                       asn1_encoded_key.value[7].value,
+                                       asn1_encoded_key.value[8].value)
+            else
+                rsa_key.n = asn1_encoded_key.value[1].value
+                rsa_key.e = asn1_encoded_key.value[2].value
+                rsa_key.d = asn1_encoded_key.value[3].value
+                rsa_key.p = asn1_encoded_key.value[4].value
+                rsa_key.q = asn1_encoded_key.value[5].value
+                rsa_key.dmp1 = asn1_encoded_key.value[6].value
+                rsa_key.dmq1 = asn1_encoded_key.value[7].value
+                rsa_key.iqmp = asn1_encoded_key.value[8].value
+            end
 
             rsa_key
         end
