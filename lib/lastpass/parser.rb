@@ -100,24 +100,28 @@ module LastPass
             asn1_encoded_key = OpenSSL::ASN1.decode asn1_encoded_all.value[2].value
 
             rsa_key = OpenSSL::PKey::RSA.new
+            n = asn1_encoded_key.value[1].value
+            e = asn1_encoded_key.value[2].value
+            d = asn1_encoded_key.value[3].value
+            p = asn1_encoded_key.value[4].value
+            q = asn1_encoded_key.value[5].value
+            dmp1 = asn1_encoded_key.value[6].value
+            dmq1 = asn1_encoded_key.value[7].value
+            iqmp = asn1_encoded_key.value[8].value
+
             if rsa_key.respond_to? :set_key
-                rsa_key.set_key(asn1_encoded_key.value[1].value,
-                                asn1_encoded_key.value[2].value,
-                                asn1_encoded_key.value[3].value)
-                rsa_key.set_factors(asn1_encoded_key.value[4].value,
-                                    asn1_encoded_key.value[5].value)
-                rsa_key.set_crt_params(asn1_encoded_key.value[6].value,
-                                       asn1_encoded_key.value[7].value,
-                                       asn1_encoded_key.value[8].value)
+                rsa_key.set_key n, e, d
+                rsa_key.set_factors p, q
+                rsa_key.set_crt_params dmp1, dmq1, iqmp
             else
-                rsa_key.n = asn1_encoded_key.value[1].value
-                rsa_key.e = asn1_encoded_key.value[2].value
-                rsa_key.d = asn1_encoded_key.value[3].value
-                rsa_key.p = asn1_encoded_key.value[4].value
-                rsa_key.q = asn1_encoded_key.value[5].value
-                rsa_key.dmp1 = asn1_encoded_key.value[6].value
-                rsa_key.dmq1 = asn1_encoded_key.value[7].value
-                rsa_key.iqmp = asn1_encoded_key.value[8].value
+                rsa_key.n = n
+                rsa_key.e = e
+                rsa_key.d = d
+                rsa_key.p = p
+                rsa_key.q = q
+                rsa_key.dmp1 = dmp1
+                rsa_key.dmq1 = dmq1
+                rsa_key.iqmp = iqmp
             end
 
             rsa_key
