@@ -3,6 +3,7 @@ Version 1.6.1
 
 - Obsolete URI.encode is replaced with URI.encode_www_form_component to
   inhibit the warning
+- Travic CI runs on all 2.* latest minor version releases (2.0.0 to 2.7.1)
 
 Version 1.6.0
 -------------
