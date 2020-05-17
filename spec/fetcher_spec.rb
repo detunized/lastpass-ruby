@@ -10,6 +10,7 @@ describe LastPass::Fetcher do
 
     let(:hash) { "7880a04588cfab954aa1a2da98fd9c0d2c6eba4c53e36a94510e6dbf30759256" }
     let(:session_id) { "53ru,Hb713QnEVM5zWZ16jMvxS0" }
+    let(:escaped_session_id) { "53ru%2CHb713QnEVM5zWZ16jMvxS0" }
     let(:session) { LastPass::Session.new session_id, key_iteration_count, "DEADBEEF" }
 
     let(:blob_response) { "TFBBVgAAAAMxMjJQUkVNAAAACjE0MTQ5" }
@@ -36,7 +37,7 @@ describe LastPass::Fetcher do
         it "makes a GET request" do
             web_client = double "web_client"
             expect(web_client).to receive(:get)
-                .with("https://lastpass.com/logout.php?method=cli&noredirect=1", cookies: {"PHPSESSID" => session_id})
+                .with("https://lastpass.com/logout.php?method=cli&noredirect=1", cookies: {"PHPSESSID" => escaped_session_id})
                 .and_return(http_ok "")
             LastPass::Fetcher.logout session, web_client
         end
@@ -199,7 +200,7 @@ describe LastPass::Fetcher do
             expect(web_client = double("web_client")).to receive(:get)
                 .with("https://lastpass.com/getaccts.php?mobile=1&b64=1&hash=0.0&hasplugin=3.0.23&requestsrc=cli",
                       format: :plain,
-                      cookies: {"PHPSESSID" => session_id})
+                      cookies: {"PHPSESSID" => escaped_session_id})
                 .and_return(http_ok(blob_response))
 
             LastPass::Fetcher.fetch session, web_client

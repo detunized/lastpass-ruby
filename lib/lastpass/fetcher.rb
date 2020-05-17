@@ -10,7 +10,7 @@ module LastPass
 
         def self.logout session, web_client = http
             response = web_client.get "https://lastpass.com/logout.php?method=cli&noredirect=1",
-                                      cookies: {"PHPSESSID" => URI.encode(session.id)}
+                                      cookies: {"PHPSESSID" => URI.encode_www_form_component(session.id)}
 
             raise NetworkError unless response.response.is_a? Net::HTTPOK
         end
@@ -18,7 +18,7 @@ module LastPass
         def self.fetch session, web_client = http
             response = web_client.get "https://lastpass.com/getaccts.php?mobile=1&b64=1&hash=0.0&hasplugin=3.0.23&requestsrc=cli",
                                       format: :plain,
-                                      cookies: {"PHPSESSID" => URI.encode(session.id)}
+                                      cookies: {"PHPSESSID" => URI.encode_www_form_component(session.id)}
 
             raise NetworkError unless response.response.is_a? Net::HTTPOK
 
