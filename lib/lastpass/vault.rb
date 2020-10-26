@@ -3,7 +3,7 @@
 
 module LastPass
     class Vault
-        attr_reader :accounts
+        attr_reader :accounts, :notes
 
         # Fetches a blob from the server and creates a vault
         def self.open_remote username, password, multifactor_password = nil, client_id = nil
@@ -37,7 +37,11 @@ module LastPass
                 private_key = Parser.parse_private_key blob.encrypted_private_key, encryption_key
             end
 
-            @accounts = parse_accounts chunks, encryption_key, private_key
+            @accounts, @notes = parse_accounts chunks, encryption_key, private_key
+        end
+
+        def accounts_and_notes
+          @accounts_and_notes ||= @accounts + @notes
         end
 
         def complete? chunks
@@ -46,6 +50,7 @@ module LastPass
 
         def parse_accounts chunks, encryption_key, private_key
             accounts = []
+            notes = []
             key = encryption_key
 
             chunks.each do |i|
@@ -53,8 +58,11 @@ module LastPass
                 when "ACCT"
                     # TODO: Put shared folder name as group in the account
                     account = Parser.parse_ACCT i, key
-                    if account
+                    case account
+                    when Account
                         accounts << account
+                    when Note
+                        notes << account
                     end
                 when "SHAR"
                     raise "private_key must be provided" if !private_key
@@ -64,7 +72,7 @@ module LastPass
                 end
             end
 
-            accounts
+            [ accounts, notes ]
         end
     end
 end
