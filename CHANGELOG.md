@@ -1,3 +1,9 @@
+Version 1.7.0
+-------------
+
+- Parse generic secure notes (thanks to Michael Chui @saraid)
+- Parse and store secure notes for accounts (see `Account.note` property)
+
 Version 1.6.1
 -------------
 
