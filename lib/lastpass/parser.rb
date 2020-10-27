@@ -28,9 +28,9 @@ module LastPass
         end
 
         # Parses an account chunk, decrypts and creates an Account object.
-        # May return nil when the chunk does not represent an account.
-        # All secure notes are ACCTs but not all of them strore account
-        # information.
+        # Returns either an Account or a Note object, in case of a generic
+        # note that doesn't represent an account. All secure notes are ACCTs
+        # but not all of them store account information.
         #
         # TODO: Make a test case that covers secure note account
         def self.parse_ACCT chunk, encryption_key
@@ -50,7 +50,7 @@ module LastPass
                 if secure_note == "1"
                     parsed = parse_secure_note_server notes
                     if !ACCOUNT_LIKE_SECURE_NOTE_TYPES.key? parsed[:type]
-                      return Note.new id, name, notes, group
+                        return Note.new id, name, notes, group
                     end
 
                     url = parsed[:url] if parsed.key? :url

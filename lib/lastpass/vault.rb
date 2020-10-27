@@ -37,7 +37,7 @@ module LastPass
                 private_key = Parser.parse_private_key blob.encrypted_private_key, encryption_key
             end
 
-            @accounts, @notes = parse_accounts chunks, encryption_key, private_key
+            @accounts, @notes = parse_accounts_and_notes chunks, encryption_key, private_key
         end
 
         def accounts_and_notes
@@ -48,7 +48,7 @@ module LastPass
             !chunks.empty? && chunks.last.id == "ENDM" && chunks.last.payload == "OK"
         end
 
-        def parse_accounts chunks, encryption_key, private_key
+        def parse_accounts_and_notes chunks, encryption_key, private_key
             accounts = []
             notes = []
             key = encryption_key
@@ -72,7 +72,7 @@ module LastPass
                 end
             end
 
-            [ accounts, notes ]
+            [accounts, notes]
         end
     end
 end
