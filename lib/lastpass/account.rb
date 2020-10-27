@@ -8,14 +8,16 @@ module LastPass
                     :username,
                     :password,
                     :url,
+                    :notes,
                     :group
 
-        def initialize id, name, username, password, url, group
+        def initialize id, name, username, password, url, notes, group
             @id = id
             @name = name
             @username = username
             @password = password
             @url = url
+            @notes = notes
             @group = group
         end
     end

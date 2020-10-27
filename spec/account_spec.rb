@@ -9,14 +9,16 @@ describe LastPass::Account do
     let(:username) { "username" }
     let(:password) { "password" }
     let(:url) { "url" }
+    let(:notes) { "notes" }
     let(:group) { "group" }
 
-    subject { LastPass::Account.new id, name, username, password, url, group }
+    subject { LastPass::Account.new id, name, username, password, url, notes, group }
 
     its(:id) { should eq id }
     its(:name) { should eq name }
     its(:username) { should eq username }
     its(:password) { should eq password }
     its(:url) { should eq url }
+    its(:notes) { should eq notes }
     its(:group) { should eq group }
 end

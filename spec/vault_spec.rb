@@ -29,6 +29,30 @@ describe LastPass::Vault do
             it "should have correct IDs" do
                 expect(vault.accounts.map &:id).to eq TEST_ACCOUNTS.map &:id
             end
+
+            it "should have correct names" do
+                expect(vault.accounts.map &:name).to eq TEST_ACCOUNTS.map &:name
+            end
+
+            it "should have correct usernames" do
+                expect(vault.accounts.map &:username).to eq TEST_ACCOUNTS.map &:username
+            end
+
+            it "should have correct passwords" do
+                expect(vault.accounts.map &:password).to eq TEST_ACCOUNTS.map &:password
+            end
+
+            it "should have correct urls" do
+                expect(vault.accounts.map &:url).to eq TEST_ACCOUNTS.map &:url
+            end
+
+            it "should have correct notes" do
+                expect(vault.accounts.map &:notes).to eq TEST_ACCOUNTS.map &:notes
+            end
+
+            it "should have correct groups" do
+                expect(vault.accounts.map &:group).to eq TEST_ACCOUNTS.map &:group
+            end
         end
     end
 end

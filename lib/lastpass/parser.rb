@@ -58,7 +58,7 @@ module LastPass
                     password = parsed[:password] if parsed.key? :password
                 end
 
-                Account.new id, name, username, password, url, group
+                Account.new id, name, username, password, url, notes, group
             end
         end
 
