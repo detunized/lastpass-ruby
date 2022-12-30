@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
 
     s.required_ruby_version = ">= 2.0.0"
 
-    s.add_dependency "httparty", "~> 0.14.0"
+    s.add_dependency "httparty", "~> 0.14"
 
     s.add_development_dependency "rake", "~> 12.0"
     s.add_development_dependency "rspec", "~> 3.5"
