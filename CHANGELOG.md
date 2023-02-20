@@ -1,3 +1,8 @@
+Version 1.7.1
+-------------
+
+- Updated httparty gem (thanks to Hethe Berg @growthcode)
+
 Version 1.7.0
 -------------
 
