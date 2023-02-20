@@ -23,6 +23,7 @@ jobs:
     - run: bundle exec rake
 
   build:
+    if: github.event_name == 'push' && contains(github.ref, 'refs/tags/v')
     needs: test
     runs-on: ubuntu-latest
     steps:
@@ -31,6 +32,11 @@ jobs:
       with:
         ruby-version: 2.7
         bundler-cache: true # runs 'bundle install' and caches installed gems automatically
-    - run: bundle install
-    - run: bundle exec gem build lastpass.gemspec
-    - run: ls -l
+    - name: Install dependencies
+      run: bundle install
+    - name: Build the gem
+      run: bundle exec gem build lastpass.gemspec
+    - name: Push the gem to rubygems.org
+      run: bundle exec gem push *.gem
+      env:
+        GEM_HOST_API_KEY: "${{secrets.RUBYGEMS_AUTH_TOKEN}}"
