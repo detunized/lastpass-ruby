@@ -14,10 +14,22 @@ jobs:
       matrix:
         ruby: [2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7]
     steps:
-    - uses: actions/checkout@v2
-    - uses: ruby/setup-ruby@v1
+    - uses: actions/checkout@v3
+    - uses: ruby/setup-ruby@v3
       with:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true # runs 'bundle install' and caches installed gems automatically
     - run: bundle install
     - run: bundle exec rake
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: ruby/setup-ruby@v3
+      with:
+        ruby-version: 2.7
+        bundler-cache: true # runs 'bundle install' and caches installed gems automatically
+    - run: bundle install
+    - run: bundle exec gem build lastpass.gemspec
+    - run: ls -l
