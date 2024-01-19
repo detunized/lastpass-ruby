@@ -6,6 +6,15 @@ LastPass Ruby API
 [![Code Climate](https://codeclimate.com/github/detunized/lastpass-ruby.svg)](https://codeclimate.com/github/detunized/lastpass-ruby)
 [![Dependency Status](https://gemnasium.com/detunized/lastpass-ruby.svg)](https://gemnasium.com/detunized/lastpass-ruby)
 
+## No longer supported
+
+This project is no longer supported. There's a fully supported and regularly 
+updated C# library that implements access to a veriety of password managers, 
+including LastPass. Please check out 
+[Password Manager Access](https://github.com/detunized/password-manager-access).
+
+---
+
 **This is unofficial LastPass API.**
 
 There are also [a C#/.NET port](https://github.com/detunized/lastpass-sharp) and [a Python port](https://github.com/konomae/lastpass-python) available.
